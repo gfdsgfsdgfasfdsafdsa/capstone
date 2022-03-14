@@ -4,6 +4,7 @@ export const GENDER = ['Male', 'Female']
 export const NOTIFICATION_COUNT = 3
 
 export function paginationRecordCount(pageIndex, total){
+    if(total === undefined) return
     let start = (pageIndex - 1) * PAGINATION_COUNT + 1
     let end = total
 

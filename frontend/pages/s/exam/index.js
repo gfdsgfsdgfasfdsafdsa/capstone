@@ -14,8 +14,9 @@ import SubjectCard from "../../../components/schooladmin/exam/SubjectCard";
 
 export default function Exam({ exam }) {
     const [dScrollOpen, setDScrollOpen] = useState(false);
+    const [page, setPage] = useState(1)
 
-    const { data: csvData } = useSWR(dScrollOpen ? 'school/csv/': null)
+    const { data: csvData } = useSWR(dScrollOpen ? `school/csv/${page}/`: null)
     const { data: exam_details, isValidating } = useSWR('school/exam/', {
         fallbackData: exam,
         revalidateOnFocus: false,
@@ -40,6 +41,8 @@ export default function Exam({ exam }) {
                                 dScrollOpen={dScrollOpen}
                                 setDScrollOpen={setDScrollOpen}
                                 csvData={csvData}
+                                setPage={setPage}
+                                page={page}
                     />
                     <Box sx={{ pt: 3 }}>
                         {isValidating ? (

@@ -14,7 +14,7 @@ import {
     CircularProgress,
     TextField, Table, TableHead, TableRow, TableCell, TableBody,
     Dialog, DialogActions, DialogContent,
-    DialogContentText, DialogTitle, TableContainer,
+    DialogContentText, DialogTitle, TableContainer, Pagination,
 } from '@mui/material';
 import {
     Upload as UploadIcon,
@@ -23,8 +23,9 @@ import {
     InsertDriveFile as InsertDriveFileIcon
 } from '@mui/icons-material'
 import AlertCollapse from "../../AlertCollapse";
+import {paginationRecordCount} from "../../../config/settings";
 
-const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData }) => {
+const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage }) => {
     const fileInit = {
         name: '',
         file: '',
@@ -402,6 +403,8 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData }) => {
         }
     }, [dScrollOpen]);
 
+    console.log(csvData)
+
     return (
         <Box>
             <Dialog
@@ -491,6 +494,27 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData }) => {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
+                    <Box
+                        my={2}
+                        mr={1}
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'end',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            rowGap: '10px',
+                        }}
+                    >
+                        <Box sx={{ mr: 1 }}>
+                            {paginationRecordCount(page, csvData?.count)}
+                        </Box>
+                        <Pagination count={csvData?.count ? Math.ceil(csvData?.count/15) : 0}
+                                    page={page}
+                                    color="primary"
+                                    onChange={(_e, n) => {
+                                        setPage(n)
+                                    }}/>
+                    </Box>
                     <Button variant="contained" size="small" onClick={handleScrollClose}>Close</Button>
                 </DialogActions>
             </Dialog>

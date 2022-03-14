@@ -15,7 +15,7 @@ urlpatterns = [
     path("exam/students/applied/", StudentAppliedList.as_view()),
     path("exam/student/results/", StudentExamResults.as_view()),
     path("exam/student/results/<int:pk>/", StudentExamResult.as_view()),
-    path("csv/", CsvData.as_view()),
+    path("csv/<int:page>/", CsvData.as_view()),
     path('notification/', Notification.as_view()),
     path('notification/details/', NotificationDetails.as_view()),
 ]

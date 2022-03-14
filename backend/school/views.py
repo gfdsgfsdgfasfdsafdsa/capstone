@@ -251,30 +251,44 @@ class StudentExamResult(generics.RetrieveAPIView):
 
 
 class CsvData(APIView):
-    def get(self, request, format=None, **kwargs):
+    def get(self, request, format=None, *args, **kwargs):
+
+        data={}
+        csv_file = Exam.objects.get(school__user_id=request.user.id).csv_file
+        csv = pd.read_csv(csv_file)
+        total = csv[csv.columns[0]].count()
+
+        page_count = 15
+        page = kwargs['page']
+        start = (page - 1) * page_count + 1
+        end = 0
+        if page_count < total:
+            end = page_count * page
+            if end > total:
+                end = total
+        csv = csv.iloc[start-1:end]
+        t = []
+        for index, row in csv.iterrows():
+            t.append(row)
+        data['data'] = t
+        csv.drop_duplicates(subset ="Strand",
+                            keep = 'first', inplace = True)
+        data['strands'] = csv['Strand'].values
+        #subjects = []
+        row_header = []
+        skip_col = 2
+        i = 0
+        for col in csv.columns:
+            if i >= skip_col:
+                row_header.append(col.split('/')[0])
+            else:
+                row_header.append(col)
+            i += 1
+        #data['subjects'] = subjects
+        data['row_header'] = row_header
+        data['count'] = total
         try:
-            data={}
-            csv_file = Exam.objects.get(school__user_id=request.user.id).csv_file
-            csv = pd.read_csv(csv_file)
-            t = []
-            for index, row in csv.iterrows():
-                t.append(row)
-            data['data'] = t
-            csv.drop_duplicates(subset ="Strand",
-                                keep = 'first', inplace = True)
-            data['strands'] = csv['Strand'].values
-            #subjects = []
-            row_header = []
-            skip_col = 2
-            i = 0
-            for col in csv.columns:
-                if i >= skip_col:
-                    row_header.append(col.split('/')[0])
-                else:
-                    row_header.append(col)
-                i += 1
-            #data['subjects'] = subjects
-            data['row_header'] = row_header
+            pass
         except (Exception,):
             return Response({ 'status': '204' }, status=status.HTTP_200_OK)
 
