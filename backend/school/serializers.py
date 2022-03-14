@@ -215,7 +215,7 @@ class ResultDetailSerializer(serializers.ModelSerializer):
 class CourseRecommendedSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseRecommended
-        fields = ['id', 'course']
+        fields = ['id', 'course', 'rank']
 
 class ResultSingleSerializer(serializers.ModelSerializer):
     student = StudentDetailSerializer()

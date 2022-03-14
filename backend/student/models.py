@@ -28,6 +28,7 @@ class CourseRecommended(models.Model):
     result = models.ForeignKey(
         Result, related_name="result_courses", on_delete=models.CASCADE)
     course = models.CharField(max_length=255)
+    rank = models.IntegerField()
 
     class Meta:
         verbose_name = 'Course Recommend'

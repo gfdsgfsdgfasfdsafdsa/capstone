@@ -173,64 +173,58 @@ class SubmitExamApi(APIView):
                 j += 1
             exam_info['Overall'] = overall_score
 
+            predicted = 0
+            xt = x.transpose()
+            a = np.dot(xt, x)
+            b = np.dot(xt, y)
+            beta = np.linalg.solve(a, b)
+
+            for i, b in enumerate(beta):
+                if i == 0:
+                    predicted += b
+                else:
+                    predicted += (b * student_scores[i - 1])
+            predicted = round(predicted)
+
+            values = pd.DataFrame(data, columns=['Course', 'Overall']).query("Overall <= " + str(predicted))
+
+            last_rank = 1
+            last_overall = -1
             for j in range(10):
-                if col_length <= 0:
-                    break
-
-                xt = x.transpose()
-                a = np.dot(xt, x)
-                b = np.dot(xt, y)
-                beta = np.linalg.solve(a, b)
-
-                formula = "y = "
-                predicted = 0
-                for i, b in enumerate(beta):
-                    if i == 0:
-                        predicted += b
-                        formula += str(b)
-                    else:
-                        predicted += (b * student_scores[i - 1])
-                        formula += ' + (' + str(b) + '*' + str(student_scores[i - 1]) + ')'
-                predicted = round(predicted)
-
-                if predicted == 0:
-                    break
-
-                # past student score
                 for index, row in values.iterrows():
-                    if row['Overall'] <= predicted:
-                        if j == 0:
-                            exam_info['Course'] = row['Course']
-                        CourseRecommended.objects.create(
-                            result=result,
-                            course=row['Course'],
-                        )
-                        data = data.drop(data[data['Course'] == row['Course']].index)
-                        x = data.drop(x_drops, axis='columns')
-                        x = np.array(x)
-                        col_length = np.size(x, 0)
-                        ones = np.ones((col_length, 1))
-                        x = np.hstack((ones, x))
-                        y = np.array(data['Overall'])
-                        values = pd.DataFrame(data, columns=['Course', 'Overall'])
-                        break
+                    if last_overall == -1:
+                        last_overall = int(row['Overall'])
+                    else:
+                        if last_overall != int(row['Overall']):
+                            last_rank += 1
+
+                    if j == 0:
+                        exam_info['Course'] = row['Course']
+
+                    CourseRecommended.objects.create(
+                        result=result,
+                        course=row['Course'],
+                        rank=last_rank,
+                    )
+                    last_overall = int(row['Overall'])
+                    values = values.drop(values[values['Course'] == row['Course']].index)
+                    break
         except (Exception,):
             pass
 
         if exam_info['Course'] != '':
             df = pd.DataFrame(exam_info)
             df.to_csv(ex.csv_file.path, mode='a', index=False, header=False)
-        '''    
         else:
-            course = values.iloc[[0, -1]]['Course'][values[values.columns[0]].count()-1]
+            course = data.iloc[[0, -1]]['Course'][data[data.columns[0]].count()-1]
             exam_info['Course'] = course
             CourseRecommended.objects.create(
                 result=result,
                 course=course,
+                rank=1,
             )
             df = pd.DataFrame(exam_info)
             df.to_csv(ex.csv_file.path, mode='a', index=False, header=False)
-        '''
         '''
         csv_file = Exam.objects.get(school=school).csv_file
         data = pd.read_csv(csv_file)
@@ -325,6 +319,7 @@ class ResultApi(APIView):
                     obj = {
                         'id': r.id,
                         'course': r.course,
+                        'rank': r.rank,
                     }
                     course_r_list.append(obj)
             data['result_details'] = result_list

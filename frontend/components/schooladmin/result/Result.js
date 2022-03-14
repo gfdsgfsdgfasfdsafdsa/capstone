@@ -158,32 +158,23 @@ export default function Result({ result }){
                     </TableContainer>
                 </CardContent>
             </Card>
-            <Box mt={3} pb={10} id="results">
+            <Box mt={3} pb={10} ml={3}>
                 <Box>
                     <Typography variant="cool" mb={2}>
                         Course Recommended
                     </Typography>
                 </Box>
+                <Box>
+                    <Typography variant="caption" mb={2}>
+                        Same no. in ranking has no particular order
+                    </Typography>
+                </Box>
                 {result?.result_courses.map((d, i) => (
-                    <Accordion key={i} expanded={expanded === i} onChange={handleChange(i)}
-                               sx={{ marginTop: '16px' }}
-                    >
-                        <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls={`panel${i}bh-content`}
-                            id={`panel${i}bh-header`}>
-                            <Typography variant="cool">
-                                {i+1}. {d.course}
-                            </Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            <Box px={5}>
-                                <Typography variant="subtitle2">
-                                    R squared :{d.r2}
-                                </Typography>
-                            </Box>
-                        </AccordionDetails>
-                    </Accordion>
+                    <Box key={d.id} sx={{ pl: 5 }}>
+                        <Typography variant="cool" mb={2}>
+                            {d.rank} <span style={{ marginLeft: '10px' }}>{d.course}</span>
+                        </Typography>
+                    </Box>
                 ))}
             </Box>
         </>

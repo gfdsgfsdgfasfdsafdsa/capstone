@@ -62,7 +62,6 @@ const Single = ({ school, router, id }) => {
                 //mutate(`student/exam/start/${school.id}/`, { submitted: true })
                 router.push(`/u/results/${id}`)
             }).catch((_e) => {
-                setSubmitState({ ...submitState, loading: false })
             })
     }
 

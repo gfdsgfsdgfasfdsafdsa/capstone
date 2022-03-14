@@ -120,18 +120,17 @@ export default function SchoolList({ pageIndex, setPageIndex, schools, mutate })
                                                 alignItems: 'center',
                                                 display: 'flex'
                                             }}>
-                                                <Avatar sx={{ mr: 2 }}>
-                                                    <Image
-                                                        src={school.logo_url ? school.logo_url: '/static/images/hcdc_logo.png' }
-                                                        width={40}
-                                                        height={40}
-                                                        alt="logo"
-                                                        quality={80}
-                                                        objectFit="cover"/>
-                                                </Avatar>
+                                                <Image
+                                                    src={school.logo_url ? school.logo_url: '/static/images/default.png' }
+                                                    width={40}
+                                                    height={40}
+                                                    alt="logo"
+                                                    quality={80}
+                                                    objectFit="cover"/>
                                                 <Typography
                                                     color="textPrimary"
                                                     variant="body1"
+                                                    sx={{ ml: 2 }}
                                                 >
                                                     {school.name}
                                                 </Typography>
