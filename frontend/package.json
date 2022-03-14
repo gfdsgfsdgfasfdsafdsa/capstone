@@ -1,0 +1,38 @@
+{
+  "name": "frontend",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 2222",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.7.1",
+    "@emotion/server": "^11.4.0",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.3.0",
+    "@mui/material": "^5.3.0",
+    "axios": "^0.25.0",
+    "chart.js": "^3.7.1",
+    "js-cookie": "^3.0.1",
+    "jwt-decode": "^3.1.2",
+    "luxon": "^2.3.0",
+    "next": "^12.0.10",
+    "nextjs-progressbar": "^0.0.13",
+    "notistack": "^2.0.3",
+    "package.json": "^2.0.1",
+    "papaparse": "^5.3.1",
+    "pkg.json": "^2.0.8",
+    "react": "17.0.2",
+    "react-chartjs-2": "^4.0.1",
+    "react-dom": "17.0.2",
+    "react-hook-form": "^7.25.0",
+    "sharp": "^0.29.3",
+    "swr": "^1.1.2"
+  },
+  "devDependencies": {
+    "eslint": "8.7.0",
+    "eslint-config-next": "12.0.8"
+  }
+}

@@ -1,0 +1,11 @@
+Django
+djangorestframework
+django-cors-headers
+django-debug-toolbar
+djangorestframework-simplejwt
+cloudinary
+pillow
+pandas
+scikit-learn
+ 
+ 
