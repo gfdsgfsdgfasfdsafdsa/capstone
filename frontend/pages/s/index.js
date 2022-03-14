@@ -2,6 +2,7 @@ import Head from 'next/head';
 import {Box, Card, CardContent, Container, Grid, Typography} from '@mui/material';
 import { Graph } from '../../components/schooladmin/dashboard/Graph';
 import { Pie } from '../../components/schooladmin/dashboard/Pie';
+import { ScatterPlot } from '../../components/schooladmin/dashboard/Scatter';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import NextNProgress from "nextjs-progressbar";
 
@@ -39,6 +40,14 @@ const Home = () => (
                         xl={3}
                         xs={12}>
                         <Pie sx={{ height: '100%' }} />
+                    </Grid>
+                    <Grid
+                        item
+                        lg={8}
+                        md={12}
+                        xl={9}
+                        xs={12}>
+                        <ScatterPlot />
                     </Grid>
                 </Grid>
             </Container>
