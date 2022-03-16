@@ -137,7 +137,7 @@ const Single = ({ school, router, id, mutate }) => {
 
     if(submitState.loading){
         return (
-            <DashboardLayout title="Examination">
+            <>
                 <Box
                     sx={{
                         px: 3
@@ -154,7 +154,7 @@ const Single = ({ school, router, id, mutate }) => {
                     />
                 </Box>
                 <Loading/>
-            </DashboardLayout>
+            </>
         )
     }
 

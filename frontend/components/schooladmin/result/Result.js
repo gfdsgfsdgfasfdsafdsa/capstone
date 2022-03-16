@@ -176,6 +176,30 @@ export default function Result({ result }){
                         </Typography>
                     </Box>
                 ))}
+                <Box>
+                    <Typography variant="cool" mb={2}>
+                        Regression model
+                    </Typography>
+                </Box>
+                <Box sx={{ ml: 5 }}>
+                    <Box mt={1}>
+                        <Typography
+                            sx={{
+                                fontSize: '15px',
+                            }}
+                        >
+                            <div dangerouslySetInnerHTML={{ __html: result?.formula }}/>
+                        </Typography>
+                    </Box>
+                    <Typography
+                        mt={1}
+                        sx={{
+                            fontSize: '15px'
+                        }}
+                    >
+                        {result?.regression_model}
+                    </Typography>
+                </Box>
             </Box>
         </>
     )

@@ -1,20 +1,38 @@
-// import {Main} from 'next/document';
-import { Box } from '@mui/material';
+import Head from 'next/head';
 import { DashboardLayout } from '../../components/DashboardLayout';
+import NextNProgress from "nextjs-progressbar";
+import { Graph } from '../../components/admin/dashboard/Graph';
+import {Box, Card, CardContent, Container, Grid, Typography} from '@mui/material';
+
 
 function Home() {
 
     return (
         <>
-            <DashboardLayout>
+            <DashboardLayout title='Dashboard'>
+                <NextNProgress height={3}/>
+                <Head>
+                    <title>
+                        Dashboard
+                    </title>
+                </Head>
                 <Box
                     component="main"
                     sx={{
                         flexGrow: 1,
-                        py: 8
-                    }}
-                >
-                    Admin
+                        py: 2
+                    }}>
+                    <Container maxWidth={false}>
+                        <Grid
+                            container
+                            spacing={3}>
+                            <Grid
+                                item
+                                md={12}>
+                                <Graph />
+                            </Grid>
+                        </Grid>
+                    </Container>
                 </Box>
             </DashboardLayout>
         </>
@@ -31,5 +49,3 @@ function Home() {
 // )
 
 export default Home
-
-

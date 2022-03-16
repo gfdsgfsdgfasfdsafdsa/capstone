@@ -10,7 +10,6 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {useState} from "react";
 import Image from 'next/image'
-import ScatterPlot from "../../result/ScatterPlot";
 
 export default function Single({ result }){
     const [expanded, setExpanded] = useState();
@@ -18,6 +17,7 @@ export default function Single({ result }){
     const handleChange = (panel) => (event, newExpanded) => {
         setExpanded(newExpanded ? panel : false);
     };
+    console.log(result)
 
     return (
         <>
@@ -45,7 +45,7 @@ export default function Single({ result }){
                             height={80}
                             quality={100}
                             placeholder="blur"
-                            blurDataURL={result?.logo_url ? result?.logo_url: "/static/images/hcdc_logo.png"}
+                            blurDataURL={result?.logo_url ? result?.logo_url: "/static/images/default.png"}
                         />
                         <Box sx={{ ml: 2 }}>
                             <Typography variant="h5">
@@ -114,7 +114,6 @@ export default function Single({ result }){
                             </Box>
                         ))}
                     </>
-                    <ScatterPlot/>
                 </Box>
             </Container>
         </>

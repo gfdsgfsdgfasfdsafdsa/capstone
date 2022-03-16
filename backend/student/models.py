@@ -9,6 +9,8 @@ class Result(models.Model):
     submitted = models.BooleanField(default=False)
     date_taken = models.DateTimeField(null=True, blank=True)
     date_end = models.DateTimeField(null=True, blank=True)
+    formula = models.CharField(max_length=255, default='')
+    regression_model = models.CharField(max_length=255, default='')
 
     class Meta:
         verbose_name = 'Exam Result'

@@ -2,6 +2,7 @@ from django.db import IntegrityError
 
 from accounts.models import School, User, Student
 from rest_framework import serializers
+from school.models import Exam
 
 class SchoolSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField('_logo_url')
@@ -47,6 +48,9 @@ class SchoolSerializer(serializers.ModelSerializer):
         except IntegrityError:
             School.objects.filter(user=user).delete()
             school = School.objects.create(**data, user=user)
+
+        Exam.objects.create(school=school)
+
         return school
 
 

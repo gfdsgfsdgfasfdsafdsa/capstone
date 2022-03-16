@@ -113,7 +113,8 @@ class SubmitExamApi(APIView):
     def post(self, request, format=None, **kwargs):
         school = School.objects.select_related('school_exam').get(id=kwargs['pk'])
         result = Result.objects.get(school=school, student__user_id=request.user.id)
-        if result.submitted:
+
+        if ResultDetails.objects.filter(result=result).count() or result.submitted:
             return Response(status=status.HTTP_200_OK)
 
         subjects = Subject.objects.filter(exam__school=school)
@@ -157,7 +158,11 @@ class SubmitExamApi(APIView):
         # Regression
         ex = Exam.objects.get(school=school)
         data = pd.read_csv(ex.csv_file).sort_values(by='Overall', ascending=False, ignore_index=True)
-        values = pd.DataFrame(data, columns=['Course', 'Overall'])
+        # values = pd.DataFrame(data, columns=['Course', 'Overall'])
+
+        regression_model = "y = "
+        formula = "y = &beta;0"
+        beta_count = 1
         try:
             x_drops = ['Course', 'Strand', 'Student', 'Overall', 'Student']
 
@@ -169,6 +174,7 @@ class SubmitExamApi(APIView):
             y = np.array(data['Overall'])
 
             student_scores = []
+
             result_d = ResultDetails.objects.filter(result=result)
             skip_col = 3
             j = 0
@@ -179,6 +185,8 @@ class SubmitExamApi(APIView):
                             student_scores.append(r.score)
                             exam_info[r.subject] = r.score
                             overall_score += r.score
+                            formula += " + &beta;"+ str(beta_count) +"("+ r.subject +")"
+                            beta_count += 1
                 j += 1
             exam_info['Overall'] = overall_score
 
@@ -191,8 +199,10 @@ class SubmitExamApi(APIView):
             for i, b in enumerate(beta):
                 if i == 0:
                     predicted += b
+                    regression_model += str(b)
                 else:
                     predicted += (b * student_scores[i - 1])
+                    regression_model += ' + (' + str(b) + '*' + str(student_scores[i - 1]) + ')'
             predicted = round(predicted)
 
             values = pd.DataFrame(data, columns=['Course', 'Overall']).query("Overall <= " + str(predicted))
@@ -218,8 +228,12 @@ class SubmitExamApi(APIView):
                     last_overall = int(row['Overall'])
                     values = values.drop(values[values['Course'] == row['Course']].index)
                     break
+            result.regression_model = regression_model
+            result.formula = formula
+            result.save()
         except (Exception,):
             pass
+
 
         if exam_info['Course'] != '':
             df = pd.DataFrame(exam_info)
@@ -232,6 +246,13 @@ class SubmitExamApi(APIView):
                 course=course,
                 rank=1,
             )
+            regression_model = "y = 0 "
+            for i in range(beta_count):
+                regression_model += " + 0(0)"
+
+            result.formula = formula
+            result.regression_model = regression_model
+            result.save()
             df = pd.DataFrame(exam_info)
             df.to_csv(ex.csv_file.path, mode='a', index=False, header=False)
         '''
@@ -311,6 +332,8 @@ class ResultApi(APIView):
             result = Result.objects.get(school=school, student__user_id=request.user.id)
             data['date_taken'] = result.date_taken
             data['date_end'] = result.date_end
+            data['formula'] = result.formula
+            data['regression_model'] = result.regression_model
             data['submitted'] = result.submitted
             result_list = []
             course_r_list = []
