@@ -134,12 +134,6 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
 
 
     const onClickConfirm = async () => {
-        setStatus({
-            success: false,
-            error: false,
-            loading: true,
-            message: 'Uploading CSV FILE'
-        })
         let csvFileData = await csvFile().then((data) => data)
         if(!csvFileData){
             setStatus({
@@ -151,21 +145,29 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
             return
         }
 
-        let hasCourse = false, hasStrand = false, hasLimit = false, emptyCell = false
+        let hasCourse = false, hasStrand = false, hasOverall = false, hasStudent = false, hasLimit = false, emptyCell = false
         let limit = [], greaterThanLimit = false
 
         csvFileData.map((r, i) => {
             r.map((item, j) => {
-                if(i === 0 && j === 1 && item === 'Course'){
+                if(i === 0 && j === 0 && item === 'Student') {
+                    hasStudent = true
+                }else if(i === 0 && j === 1 && item === 'Course'){
                     hasCourse = true
                 }else if(i === 0 && j === 2 && item === 'Strand'){
                     hasStrand = true
                 }else if(i === 0){
                     try{
+                        if(item === 'Overall'){
+                            hasOverall = true
+                            return
+                        }
                         let subject = item.split('/')
-                        if(subject.length === 2 && !isNaN(subject[1])){
+                        if(subject.length === 2 && !isNaN(subject[1]) && subject[1] !== ''){
                             limit.push(parseInt(subject[1]))
                             hasLimit = true
+                        }else{
+                            hasLimit = false
                         }
                     }catch{
                         hasLimit = false
@@ -174,10 +176,10 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                     //last item is empty return
                     if(csvFileData?.length - 1 === i) return
 
-                    if(j === 0 || j === 1 && item === '')
+                    if((j === 0 || j === 1 || j === 2) && item === ''){
                         emptyCell = true
-                    else if(!isNaN(item) && item !== ''){
-                        if(parseInt(item) > limit[j - 2])
+                    }else if(!isNaN(item) && item !== ''){
+                        if(parseInt(item) > limit[j - 3])
                             greaterThanLimit = true
                     }
                 }
@@ -185,19 +187,37 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
         })
 
         if(!hasCourse){
-            setStatus({
-                success: false,
-                error: true,
-                loading: false,
-                message: 'No column named "Course" found.'
-            })
-            setFile({
-                ...file,
-                name: ''
-            })
+            setStatus({ success: false, error: true, loading: false, message: 'No column named "Course" found.' })
+            setFile({ ...file, name: '' })
+            return
+        }else if(!hasStrand){
+            setStatus({ success: false, error: true, loading: false, message: 'No column named "Strand" found.' })
+            setFile({ ...file, name: '' })
+            return
+        }else if(!hasStudent){
+            setStatus({ success: false, error: true, loading: false, message: 'No column named "Student" found.' })
+            setFile({ ...file, name: '' })
+            return
+        }else if(emptyCell){
+            setStatus({ success: false, error: true, loading: false, message: 'Cell cannot be empty.' })
+            setFile({ ...file, name: '' })
+            return
+        }else if(!hasOverall){
+            setStatus({ success: false, error: true, loading: false, message: 'No column named "Overall" found.' })
+            setFile({ ...file, name: '' })
+            return
+        }else if(!hasLimit){
+            setStatus({ success: false, error: true, loading: false, message: 'Please add question limit Subject/No of items.' })
+            setFile({ ...file, name: '' })
             return
         }
 
+        setStatus({
+            success: false,
+            error: false,
+            loading: true,
+            message: 'Uploading CSV FILE'
+        })
 
         try{
             let form_data = new FormData();
@@ -314,6 +334,7 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
 
         await AxiosInstance.put(`school/exam/${exam.id}/`, data)
             .then((_r) => {
+                mutate('school/exam/', { ...exam, time_limit: `${hour}:${minute}` }, false)
                 setStatus({
                     success: true,
                     error: false,
@@ -335,6 +356,8 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
     const [openDialog, setOpenDialog] = useState(false)
 
     const onClickPublish = async () => {
+        setOpenDialog(false)
+
         if(exam?.is_published){
             setStatus({
                 success: false,
@@ -350,8 +373,33 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                 message: 'Publishing...'
             })
         }
+        if(exam?.time_limit === "00:00"){
+            setStatus({
+                success: false,
+                error: true,
+                loading: false,
+                message: 'Please set time limit.'
+            })
+            return
+        }
+        if(!exam?.is_published){
+            let notEqual = false
+            exam?.exam_subjects.map((s) => {
+                if(s.question_count !== s.total_questions){
+                    notEqual = true
+                }
+            })
+            if(notEqual){
+                setStatus({
+                    success: false,
+                    error: true,
+                    loading: false,
+                    message: 'Questions must be equal to total question.'
+                })
+                return
+            }
+        }
 
-        setOpenDialog(false)
         resetStates()
         const data = new FormData()
         data.append('is_published', !exam.is_published)
@@ -402,8 +450,6 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
             }
         }
     }, [dScrollOpen]);
-
-    console.log(csvData)
 
     return (
         <Box>
@@ -614,6 +660,7 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                                         name="csv"
                                         accept=".csv"
                                         onChange={onChangeHandleFile}
+                                        onClick={(e) => {e.target.value = ""}}
                                     />
                                     <label htmlFor="contained-button-file">
                                         <Button
@@ -645,16 +692,17 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                                 {file.name}
                             </Typography>
                             :
-                            <Button
-                                variant="outlined"
-                                color="info"
-                                startIcon={(<InsertDriveFileIcon fontSize="small" />)}
-                                size="small"
-                                sx={{ mr: 1, mt: exam.is_published ? 1 : 0 }}
-                                disabled={status.loading}
-                                onClick={handleClickScrollOpen}
-                            >
-                                {/*
+                            exam.csv_file !== null && (
+                                <Button
+                                    variant="outlined"
+                                    color="info"
+                                    startIcon={(<InsertDriveFileIcon fontSize="small" />)}
+                                    size="small"
+                                    sx={{ mr: 1, mt: exam.is_published ? 1 : 0 }}
+                                    disabled={status.loading}
+                                    onClick={handleClickScrollOpen}
+                                >
+                                    {/*
                                         <MuiLink
                                             href={`${process.env.api}${exam?.csv_file}`}
                                             target="_blank"
@@ -665,8 +713,9 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                                             {getCSVName(exam?.csv_file)}
                                         </MuiLink>
                                         */}
-                                View CSV FILE
-                            </Button>
+                                    View CSV FILE
+                                </Button>
+                            )
                         }
                     </>
                 </Box>
@@ -681,7 +730,7 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                     }
                 }}>
                     <Box>
-                        {!exam.is_published && (
+                        {(exam.csv_file !== null) && (
                             <>
                                 <Typography variant="overline">
                                     Time format hh/mm
@@ -694,38 +743,46 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                                     }}
                                     component="div"
                                 >
-                                    <TextField
-                                        inputProps={{style: { textAlign: 'center' }}}
-                                        placeholder="hh"
-                                        value={hour}
-                                        sx={{
-                                            width: '40px',
-                                            '& .MuiOutlinedInput-input': {
-                                                padding: '5px'
-                                            }
-                                        }}
-                                        disabled={status.loading}
-                                        onChange={onChangeHour}
-                                    />:
-                                    <TextField
-                                        inputProps={{style: { textAlign: 'center' }}}
-                                        placeholder="mm"
-                                        sx={{
-                                            width: '40px', ml: 1,
-                                            '& .MuiOutlinedInput-input': {
-                                                padding: '5px'
-                                            }
-                                        }}
-                                        disabled={status.loading}
-                                        value={minute}
-                                        onChange={onChangeMin}
-                                    />
-                                    <Button variant="outlined"
-                                            sx={{ padding: '4px 20px', ml: 1 }}
-                                            disabled={status.loading}
-                                            onClick={onClickSetTimeLimit}>
-                                        Set
-                                    </Button>
+                                    {exam.is_published ? (
+                                        <Typography>
+                                            {hour} hr : {minute} min
+                                        </Typography>
+                                    ):(
+                                        <>
+                                            <TextField
+                                                inputProps={{style: { textAlign: 'center' }}}
+                                                placeholder="hh"
+                                                value={hour}
+                                                sx={{
+                                                    width: '40px',
+                                                    '& .MuiOutlinedInput-input': {
+                                                        padding: '5px'
+                                                    }
+                                                }}
+                                                disabled={status.loading}
+                                                onChange={onChangeHour}
+                                            />:
+                                            <TextField
+                                                inputProps={{style: { textAlign: 'center' }}}
+                                                placeholder="mm"
+                                                sx={{
+                                                    width: '40px', ml: 1,
+                                                    '& .MuiOutlinedInput-input': {
+                                                        padding: '5px'
+                                                    }
+                                                }}
+                                                disabled={status.loading}
+                                                value={minute}
+                                                onChange={onChangeMin}
+                                            />
+                                            <Button variant="outlined"
+                                                    sx={{ padding: '4px 20px', ml: 1 }}
+                                                    disabled={status.loading}
+                                                    onClick={onClickSetTimeLimit}>
+                                                Set
+                                            </Button>
+                                        </>
+                                    )}
                                 </Typography>
                             </>
                         )}

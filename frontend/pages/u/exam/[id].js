@@ -9,7 +9,9 @@ import NextNProgress from "nextjs-progressbar";
 const ExamId = () => {
     const router = useRouter()
     const { id } = router.query
-    const { data: exam, error } = useSWR(id ? `student/exam/start/${id}/` : [])
+    const { data: exam, mutate, error } = useSWR(id ? `student/exam/start/${id}/` : [], {
+        revalidateOnFocus: false
+    })
 
     if(error?.response?.status === 405)
         router.push(`/u/exam/details/${id}`)
@@ -29,7 +31,7 @@ const ExamId = () => {
                     </title>
                 </Head>
                 {!exam ? <Loading/>
-                    : <Single school={exam} router={router} id={id}/>}
+                    : <Single school={exam} mutate={mutate} router={router} id={id}/>}
             </DashboardLayout>
         </>
     )

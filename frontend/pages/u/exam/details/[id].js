@@ -3,15 +3,15 @@ import { DashboardLayout } from '../../../../components/DashboardLayout';
 import SubjectLists from '../../../../components/student/exam/details/SubjectLists';
 import SchoolInfoHeader from '../../../../components/student/exam/SchoolInfoHeader';
 import {
-    Box, Button,
-    Container, CircularProgress, Typography, Select, FormControl, MenuItem
+    Box,
+    Button,
+    Container,
 } from '@mui/material'
 import useSWR, {useSWRConfig} from "swr";
 import {useRouter} from "next/router";
 import AxiosInstance from "../../../../utils/axiosInstance";
 import {useState} from "react";
 import Loading from "../../../../components/Loading";
-import {useSnackbar} from "notistack";
 import Alert from "../../../../components/Alert";
 import NextNProgress from "nextjs-progressbar";
 import AlertCollapse from "../../../../components/AlertCollapse";
@@ -22,35 +22,36 @@ const ExamDetails = () => {
     const { id } = router.query
     const { data: exam_details, error } = useSWR(id ? `school/schools/${id}/` : [],
         { revalidateOnFocus: false })
-    const { enqueueSnackbar } = useSnackbar();
-    const [loading, setLoading] = useState(false)
-    const [loadingText, setLoadingText] = useState('')
+
+    const [status, setStatus] = useState({
+        error: false,
+        loading: false,
+        message: '',
+    })
 
     const [dScrollOpen, setDScrollOpen] = useState(false);
     const { data: courses, error: courseError } = useSWR(id && dScrollOpen ? `student/school/courses/${id}/` : [],
         { revalidateOnFocus: false })
 
-    if(error?.response?.status === 404)
+    if(error?.response?.status === 404){
         router.push('/404')
-    if(exam_details?.taken)
-       router.push(`/u/results/${id}`)
+        return <Loading/>
+    }
+    if(exam_details?.taken){
+        router.push(`/u/results/${id}`)
+        return <Loading/>
+    }
 
     if(!exam_details) return <Loading/>
 
+
     const startExam = async () => {
-        setLoading(true)
-        setLoadingText('Starting Examination..')
+        setStatus({ error: false, loading: true, message: 'Starting Examination..' })
         await AxiosInstance.post(`student/exam/start/${id}/`, { 'start': 'yes' })
             .then((_r) => {
                 return router.push(`/u/exam/${id}`)
             }).catch((_e) => {
-                enqueueSnackbar('Unable to start Exam', { variant: 'error',
-                    anchorOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                    },
-                });
-                setLoading(false)
+                setStatus({ error: true, loading: false, message: 'Unable to start Exam' })
         })
     }
 
@@ -64,52 +65,32 @@ const ExamDetails = () => {
      **/
 
     async function handleApply() {
-        setLoading(true)
-        setLoadingText('Applying...')
+
+        setStatus({ error: true, loading: true, message: 'Applying...' })
 
         await AxiosInstance.put(`student/schools/`, {
             id,
             apply: 1,
         }).then((_r) => {
-            setLoading(false)
+            setStatus({ error: false, loading: false, message: '' })
             mutate(`school/schools/${id}/`)
         }).catch((_e) => {
-            enqueueSnackbar('Failed to Apply', { variant: 'error',
-                autoHideDuration: 2500,
-                anchorOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right',
-                },
-            });
-            setLoading(false)
+
+            setStatus({ error: true, loading: false, message: 'Something went wrong.' })
         })
     }
 
     async function handleCancelApply(){
-        setLoading(true)
-        setLoadingText('Canceling..')
+        setStatus({ error: false, loading: true, message: 'Canceling..' })
+
         await AxiosInstance.put(`student/schools/`, {
             id: id,
             cancel: 1,
         }).then((_r) => {
-            enqueueSnackbar('Canceled', { variant: 'info',
-                autoHideDuration: 2500,
-                anchorOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right',
-                },
-            });
-            setLoading(false)
+            setStatus({ error: false, loading: false, message: 'Canceled.' })
             mutate(`school/schools/${id}/`)
         }).catch((_e) => {
-            enqueueSnackbar('Failed to Cancel', { variant: 'error',
-                autoHideDuration: 2500,
-                anchorOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right',
-                },
-            });
-            setLoading(false)
+            setStatus({ error: true, loading: false, message: 'Failed to Cancel.' })
         })
     }
 
@@ -117,7 +98,7 @@ const ExamDetails = () => {
         if(s === null){
             return (
                 <Button
-                    disabled={loading}
+                    disabled={status.loading}
                     onClick={handleApply}
                     variant="contained" size="small" sx={{ mt: 2 }}>
                     Apply for Examination
@@ -126,7 +107,7 @@ const ExamDetails = () => {
         }else if(s === 'Pending'){
             return (
                 <Button
-                    disabled={loading}
+                    disabled={status.loading}
                     onClick={handleCancelApply}
                     variant="contained" color="error" size="small" sx={{ mt: 2 }}>
                     Cancel
@@ -135,7 +116,7 @@ const ExamDetails = () => {
         }else if (s === 'Accepted'){
             return(
                 <Button
-                    disabled={loading}
+                    disabled={status.loading}
                     onClick={startExam}
                     variant="contained" color="primary" size="small" sx={{ mt: 2 }}>
                     Start Examination
@@ -153,19 +134,23 @@ const ExamDetails = () => {
                 </title>
             </Head>
             <Container maxWidth="md">
-                <Alert text="You have applied for examination to this school. Please wait for their approval."
-                       condition={exam_details?.status === 'Pending'}/>
-                <Alert text="Your application has been rejected by the school."
-                       condition={exam_details?.status === 'Rejected'} severity="error"/>
-                {loading ? (
+                {status.loading ? (
                     <AlertCollapse
                         severity="loading"
-                        text={loadingText}
+                        text={status.message}
                         condition={true}
                     />
                 ): (
-                    <Alert text="Your application has been accepted you can now start your examination."
-                           condition={exam_details?.status === 'Accepted'}/>
+                    <>
+                        <Alert text="You have applied for examination to this school. Please wait for their approval."
+                               condition={exam_details?.status === 'Pending' && !status.error}/>
+                        <Alert text="Your application has been rejected by the school."
+                               condition={exam_details?.status === 'Rejected' && !status.error} severity="error"/>
+                        <Alert text={status.message}
+                               condition={status.error} severity="error"/>
+                        <Alert text="Your application has been accepted you can now start your examination."
+                               condition={exam_details?.status === 'Accepted' && !status.error}/>
+                    </>
                 )}
                 <SchoolInfoHeader
                     logoUrl={exam_details?.logo_url}

@@ -3,10 +3,13 @@ import {
     Box, Button,
     Container, Tab, Tabs, Typography
 } from "@mui/material";
-import {memo, useCallback, useEffect, useState} from "react";
+import {memo, useCallback, useEffect, useRef, useState} from "react";
 import AxiosInstance from "../../../../utils/axiosInstance";
 import Loading from "../../../Loading";
-//import {useSWRConfig} from "swr";
+import {DateTime} from "luxon";
+import AlertCollapse from "../../../AlertCollapse";
+import {useSWRConfig} from "swr";
+import {DashboardLayout} from "../../../DashboardLayout";
 
 function TabPanel(props) {
     const { children, active } = props;
@@ -21,9 +24,9 @@ function TabPanel(props) {
     );
 }
 
-const Single = ({ school, router, id }) => {
+const Single = ({ school, router, id, mutate }) => {
 
-    //const { mutate } = useSWRConfig()
+    //const { mutate: mutateSWR } = useSWRConfig()
 
     const [tabValue, setTabValue] = useState(0);
     const [subjectName, setSubjectName] = useState(school.school_exam.exam_subjects[0].name)
@@ -54,19 +57,106 @@ const Single = ({ school, router, id }) => {
     const [submitState, setSubmitState] = useState({
         loading: false,
     })
+    const sentToTheServer = useRef(false)
+
+    const submitAns = async () => {
+        if(sentToTheServer.current) return
+        await AxiosInstance.post(`student/exam/submit/${school.id}/`, answers).then((r) => {
+            mutate({ ...school, submitted: true }, false)
+            sentToTheServer.current = true
+        })
+    }
 
     const onClickSubmit = async () => {
         setSubmitState({ ...submitState, loading: true })
-        await AxiosInstance.post(`student/exam/submit/${school.id}/`, answers)
-            .then((_r) => {
-                //mutate(`student/exam/start/${school.id}/`, { submitted: true })
-                router.push(`/u/results/${id}`)
-            }).catch((_e) => {
-            })
     }
 
-    if(submitState.loading)
-        return <Loading/>
+    //timer
+    const [hours, setHours] = useState('00')
+    const [minutes, setMinutes] = useState('00')
+    const [seconds, setSeconds] = useState('00')
+    const [navigator, setNavigator] = useState({
+        online: 'yes',
+        open: 'no',
+    })
+    const intervalId = useRef(0)
+
+    useEffect(() => {
+        if(!submitState.loading){
+            let countDate  = DateTime.fromISO(school?.date_end, { zone: 'Asia/Shanghai' }).ts
+
+            intervalId.current = setInterval(() => {
+                const now = DateTime.local().setZone('Asia/Shanghai').ts
+
+                const dist = countDate - now
+
+                let hours = Math.floor(dist % (1000 * 60 * 60 * 24) / (1000 * 60 * 60))
+                let minutes = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60))
+                let seconds = Math.floor((dist % (1000 * 60)) / 1000)
+                if(dist < 0){
+                    setSubmitState({ ...submitState, loading: true })
+                    setSeconds(1)
+                }else{
+                    setHours(hours < 10 ? `0${hours}` : hours)
+                    setMinutes(minutes < 10 ? `0${minutes}` : minutes)
+                    setSeconds(seconds < 10 ? `0${seconds}` : seconds)
+                }
+            }, 1000)
+
+            return  () => clearInterval(intervalId.current)
+        }else{
+            if(!sentToTheServer.current){
+                intervalId.current = setInterval(async () => {
+                    const now = DateTime.local().setZone('Asia/Shanghai').ts
+                    if(!sentToTheServer.current)
+                        setSeconds(now)
+
+                    if (window.navigator.onLine) {
+                        if (navigator.online === 'no') {
+                            setNavigator({
+                                online: 'reconnected',
+                                open: 'yes',
+                            })
+                        }
+
+                        if(!sentToTheServer.current) await submitAns()
+                    } else {
+                        setNavigator({
+                            online: 'no',
+                            open: 'yes',
+                        })
+                    }
+                }, 2000)
+
+                return  () => clearInterval(intervalId.current)
+            }
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [seconds])
+
+    if(submitState.loading){
+        return (
+            <DashboardLayout title="Examination">
+                <Box
+                    sx={{
+                        px: 3
+                    }}
+                >
+                    <AlertCollapse
+                        condition={navigator.online === "no"}
+                        text="Connection lost. Please do not refresh wait for the internet to reconnect."
+                        severity="error"
+                    />
+                    <AlertCollapse
+                        condition={navigator.online === "reconnected"}
+                        text="Reconnected."
+                    />
+                </Box>
+                <Loading/>
+            </DashboardLayout>
+        )
+    }
 
 
     const setSubjectNameSubmit = () => {
@@ -80,6 +170,9 @@ const Single = ({ school, router, id }) => {
                 <ExamHeader
                     schoolName={school?.name}
                     subject={subjectName}
+                    hours={hours}
+                    minutes={minutes}
+                    seconds={seconds}
                 />
                 <Container maxWidth={false} sx={{ mt: 3 }}>
                     <Box sx={{ width: '100%' }}>

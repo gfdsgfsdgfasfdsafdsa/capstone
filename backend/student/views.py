@@ -12,7 +12,8 @@ from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
 import pandas as pd
 import numpy as np
-from django.db.models import Q
+from django.db.models import Q, Prefetch
+
 
 class SchoolList(generics.ListAPIView, generics.UpdateAPIView):
     serializer_class = SchoolListSerializer
@@ -58,7 +59,12 @@ class SchoolList(generics.ListAPIView, generics.UpdateAPIView):
 class StartExamApi(APIView):
     def get(self, request, format=None, **kwargs):
         try:
-            exam = School.objects.select_related('school_exam').get(id=kwargs['pk'])
+            exam = School.objects.prefetch_related(
+                Prefetch(
+                    'school_exam__exam_subjects__subject_questions',
+                    queryset=Question.objects.filter().prefetch_related('question_choices').order_by('?'),
+                )
+            ).get(id=kwargs['pk'])
             serializer = SchoolSerializer(exam)
             data = serializer.data
 
@@ -68,7 +74,7 @@ class StartExamApi(APIView):
             data['submitted'] = result.submitted
         except (Exception,):
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, format=None, **kwargs):
         if 'start' not in request.data:
@@ -107,6 +113,9 @@ class SubmitExamApi(APIView):
     def post(self, request, format=None, **kwargs):
         school = School.objects.select_related('school_exam').get(id=kwargs['pk'])
         result = Result.objects.get(school=school, student__user_id=request.user.id)
+        if result.submitted:
+            return Response(status=status.HTTP_200_OK)
+
         subjects = Subject.objects.filter(exam__school=school)
         rd = request.data
         for subject in subjects:
@@ -325,7 +334,7 @@ class ResultApi(APIView):
             data['result_details'] = result_list
             data['course_recommended'] = course_r_list
         except (Exception,):
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response({'not_found': '1'}, status=status.HTTP_200_OK)
         return Response(data)
 
 class ResultsApi(generics.ListAPIView,):

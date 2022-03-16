@@ -46,7 +46,7 @@ const NextButton = memo(function NextButton(props) {
     )
 });
 
-export default function Questions({ subjectIndex, question, answers, setAnswers,
+function Questions({ subjectIndex, question, answers, setAnswers,
                                       examSubject, setExamSubject, subjectId, subjectName, setTabFunc }) {
 
     const onClickMultipleChoice = useCallback((questionIndex, choiceIndex, qId, cId) => {
@@ -357,3 +357,5 @@ export default function Questions({ subjectIndex, question, answers, setAnswers,
         </Box>
     )
 }
+
+export default memo(Questions)

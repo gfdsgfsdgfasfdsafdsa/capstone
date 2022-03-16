@@ -12,7 +12,16 @@ const SchoolName = memo(function SchoolName({ name }) {
     )
 })
 
-const ExamHeader = ({ schoolName, subject }) => {
+
+const SubjectName = memo(function SubjectName({ name }) {
+    return (
+        <Typography variant="h6">
+            {name}
+        </Typography>
+    )
+})
+
+const ExamHeader = ({ schoolName, subject, hours, minutes, seconds }) => {
 
     return (
         <>
@@ -50,11 +59,9 @@ const ExamHeader = ({ schoolName, subject }) => {
                 */}
                 <Box sx={{ mt: 1 }}>
                     <SchoolName name={schoolName}/>
-                    <Typography variant="h6">
-                        {subject}
-                    </Typography>
+                    <SubjectName name={subject}/>
                     <Typography variant="cool">
-                        Remaining Time 00:00:00
+                        Remaining Time {hours}:{minutes}:{seconds}
                     </Typography>
                 </Box>
             </Box>

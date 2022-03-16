@@ -38,12 +38,11 @@ class SchoolListSerializer(serializers.ModelSerializer):
 # Exam Questions Serializer
 class ChoiceSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    answer = serializers.SerializerMethodField('get_answer')
     image = serializers.SerializerMethodField('_image')
 
     class Meta:
         model = Choice
-        fields = ['id', 'text', 'image', 'answer']
+        fields = ['id', 'text', 'image']
 
     def _image(self, obj):
         try:
@@ -51,8 +50,8 @@ class ChoiceSerializer(serializers.ModelSerializer):
         except AttributeError:
             return None
 
-    def get_answer(self, obj):
-        return False
+    # def get_answer(self, obj):
+        # return False
 
 class QuestionSerializer(serializers.ModelSerializer):
     choices = ChoiceSerializer(many=True)

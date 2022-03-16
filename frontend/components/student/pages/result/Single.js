@@ -10,6 +10,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {useState} from "react";
 import Image from 'next/image'
+import ScatterPlot from "../../result/ScatterPlot";
 
 export default function Single({ result }){
     const [expanded, setExpanded] = useState();
@@ -105,7 +106,7 @@ export default function Single({ result }){
                                 Same no. in ranking has no particular order
                             </Typography>
                         </Box>
-                        {result?.course_recommended.map((d, i) => (
+                        {result?.course_recommended.map((d) => (
                             <Box key={d.id} sx={{ pl: 5 }}>
                                 <Typography variant="cool" mb={2}>
                                     {d.rank} <span style={{ marginLeft: '10px' }}>{d.course}</span>
@@ -113,6 +114,7 @@ export default function Single({ result }){
                             </Box>
                         ))}
                     </>
+                    <ScatterPlot/>
                 </Box>
             </Container>
         </>
