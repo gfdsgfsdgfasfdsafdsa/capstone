@@ -23,7 +23,7 @@ import ImagePreview from './components/ImagePreview'
 import QuestionContainer from "./components/QuestionContainer";
 
 const FillInTheBlankBox = memo(function FillInTheBlankBox(props) {
-    const {onChange, q, i } = props
+    const {onChange, q, i, ans } = props
 
     return (
         <>
@@ -35,6 +35,7 @@ const FillInTheBlankBox = memo(function FillInTheBlankBox(props) {
                         padding: "6px"
                     }
                 }}
+                value={ans}
                 onChange={(e) => onChange(e, i)}
                 autoComplete="off"
             />
@@ -46,7 +47,7 @@ const FillInTheBlankBox = memo(function FillInTheBlankBox(props) {
 })
 
 const FillInTheBlank = memo(function FillInTheBlank(props) {
-    const { question, onChange } = props
+    const { question, onChange, ans } = props
 
     return (
         <Typography
@@ -62,6 +63,7 @@ const FillInTheBlank = memo(function FillInTheBlank(props) {
                                 onChange={onChange}
                                 q={q}
                                 i={i}
+                                ans={ans[i - 1] ? ans[i - 1] : ''}
                             />
                         ) : (
                             <Typography component="span" sx={{ lineHeight: "40px" }}>{q}</Typography>
@@ -73,7 +75,7 @@ const FillInTheBlank = memo(function FillInTheBlank(props) {
     )
 });
 
-const NewQuestionUI = ({ mutate, routerId, setStatus, questionCount, totalQuestion }) => {
+const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
 
     const [question, setQuestion] = useState({
         text: '',
@@ -81,11 +83,6 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, questionCount, totalQuesti
         imagePreview: null,
     })
     const [manualReset, setManualReset] = useState(false)
-    const [q, setQ] = useState(questionCount)
-
-    useEffect(() => {
-        setQ(questionCount)
-    }, [questionCount])
 
     const [type, setType] = useState('multipleChoice')
     const [option, setOption] = useState({
@@ -201,9 +198,9 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, questionCount, totalQuesti
             setStatus({ error: true, loading:false, success: false, infoMessage: 'Error: Text Fields cannot be empty.' })
             return false
         }
-        let qCount = q + 1
 
         try{
+            let total_score = 0
             let data = new FormData()
             data.append('text', question.text)
             if(question.image)
@@ -215,9 +212,18 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, questionCount, totalQuesti
             data.append('score', score)
             if(type === questionType.FillInTheBlank){
                 //validate
-                if(fillInTheBlankAns.length !== (question.text.split('_').length - 1)){
+                let blanksLength = question.text.split('_').length - 1
+                if(blanksLength === 0){
                     setStatus({ error: true, loading:false, success: false, infoMessage: 'Error: Please enter answer.' })
                     return false
+                }else{
+                    for(let i = 0; i < blanksLength; i++){
+                        if(fillInTheBlankAns[i] === '' || fillInTheBlankAns[i] === undefined){
+                            setStatus({ error: true, loading:false, success: false, infoMessage: 'Error: Please enter answer.' })
+                            return false
+                        }
+                        total_score++
+                    }
                 }
 
                 //push
@@ -233,7 +239,10 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, questionCount, totalQuesti
                 option.value.forEach((c, i) => {
                     //validate
                     if(!c.text) emptyField = true
-                    if(c.isAnswer) hasCorrect = true
+                    if(c.isAnswer){
+                        hasCorrect = true
+                        total_score++
+                    }
 
                     //push
                     if(c.image)
@@ -256,6 +265,9 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, questionCount, totalQuesti
                     return
                 }
             }
+            total_score *= score
+            data.append('current_score', total_score)
+
             if(!manualReset)
                 reset()
             setStatus({ error: false, loading: true, success: false, infoMessage: 'Saving...' })
@@ -267,15 +279,13 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, questionCount, totalQuesti
                 .then((_r) => {
                     setStatus({
                         error: false, loading:false, success: true, infoMessage: 'Saved.' })
-                    mutate(`school/exam/subject/${routerId}/questions/`)
+                    mutate({ ...subjectQuestions, current_score: subjectQuestions.subject_questions.current_score + total_score })
                 }).catch((_e) => {
                     setStatus({ error: true, loading:false, success: false, infoMessage: 'Failed to saved question.' })
-                    qCount -= 1
                 })
         }catch(_e){
 
         }
-        setQ(qCount)
     }
 
     function onChangeImageQuestion(e){
@@ -311,181 +321,176 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, questionCount, totalQuesti
 
     return (
         <>
-            {q < totalQuestion ? (
-                <>
-                    <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        mt: 2,
-                    }}>
-                        <Box sx={{ width: '800px', display:'flex', alignItems: 'center' }}>
-                            <Checkbox
-                                checked={manualReset}
-                                onClick={() => setManualReset(!manualReset)}
-                                size="small"/> Manual Reset Form
-                        </Box>
+            <>
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    mt: 2,
+                }}>
+                    <Box sx={{ width: '800px', display:'flex', alignItems: 'center' }}>
+                        <Checkbox
+                            checked={manualReset}
+                            onClick={() => setManualReset(!manualReset)}
+                            size="small"/> Manual Reset Form
                     </Box>
-                    <QuestionContainer>
-                        <PointsTextField
-                            value={score}
-                            onChange={onChangeScore}/>
-                        <QuestionTextField
-                            onChangeImageQuestion={onChangeImageQuestion}
-                            value={question.text}
-                            onChange={onChangeQuestion}
-                        />
-                        <ImagePreview
-                            image={question.imagePreview ? question.imagePreview : question.image}
-                            onClick={removeQuestionImage}
-                        />
-                        <TypeSelectField
-                            value={type}
-                            onChange={onChangeTypeSelect}
-                        />
-                        {type === questionType.FillInTheBlank && (
-                            <>
-                                <Box mt={1}>
-                                    <Typography variant="caption">
-                                        Please add underscore _ for answers
-                                    </Typography>
-                                </Box>
-                                <Box mt={1}>
-                                    <FillInTheBlank
-                                        question={question.text}
-                                        onChange={onChangeFillInTheBlanks}
+                </Box>
+                <QuestionContainer>
+                    <PointsTextField
+                        value={score}
+                        onChange={onChangeScore}/>
+                    <QuestionTextField
+                        onChangeImageQuestion={onChangeImageQuestion}
+                        value={question.text}
+                        onChange={onChangeQuestion}
+                    />
+                    <ImagePreview
+                        image={question.imagePreview ? question.imagePreview : question.image}
+                        onClick={removeQuestionImage}
+                    />
+                    <TypeSelectField
+                        value={type}
+                        onChange={onChangeTypeSelect}
+                    />
+                    {type === questionType.FillInTheBlank && (
+                        <>
+                            <Box mt={1}>
+                                <Typography variant="caption">
+                                    Please add underscore _ for answers
+                                </Typography>
+                            </Box>
+                            <Box mt={1}>
+                                <FillInTheBlank
+                                    question={question.text}
+                                    onChange={onChangeFillInTheBlanks}
+                                    ans={fillInTheBlankAns}
+                                />
+                            </Box>
+                        </>
+                    )}
+                    {(type === questionType.CheckBox || type === questionType.MultipleChoice
+                        || type === questionType.TrueOrFalse) && (
+                        <Box mt={2}>
+                            <Typography variant="body2">
+                                Choices
+                            </Typography>
+                            {option?.value?.map((o, i) => (
+                                <Box key={i} sx={{ display: 'unset' }}>
+                                    <Grid
+                                        container
+                                        alignItems="center"
+                                        sx={{ mt: 1 }}>
+                                        <Grid item xs={1}>
+                                            {(type === questionType.MultipleChoice || type === questionType.TrueOrFalse) && (
+                                                <Radio
+                                                    checked={o.isAnswer}
+                                                    onChange={(_e) => handleAnswerChange(i)}
+                                                />
+                                            )}
+                                            {type === questionType.CheckBox && (
+                                                <Checkbox
+                                                    checked={o.isAnswer}
+                                                    onChange={(_e) => handleAnswerChange(i, true)}
+                                                />
+                                            )}
+                                        </Grid>
+                                        <Grid item xs={9}>
+                                            <TextField
+                                                value={o.text}
+                                                onChange={(e) => onChangeOption(e, i)}
+                                                variant="standard"
+                                                fullWidth
+                                                autoComplete="off"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={1}>
+                                            <input
+                                                style={{ display: "none" }}
+                                                id={`new-question-option-image-${i}`}
+                                                type="file"
+                                                accept="image/png, image/jpeg"
+                                                onChange={(e) => onChangeImageOption(e, i)}
+                                                onClick={(e) => {e.target.value = ''}}
+                                            />
+                                            <label htmlFor={`new-question-option-image-${i}`}>
+                                                <IconButton
+                                                    component="span"
+                                                >
+                                                    <CropOriginalIcon/>
+                                                </IconButton>
+                                            </label>
+                                        </Grid>
+                                        <Grid item xs={1}
+                                        >
+                                            {option?.value.length > 1 && (
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() => {
+                                                        let newOption = option.value.filter((_disable, j) => {
+                                                            return j !== i
+                                                        })
+                                                        setOption({ value: newOption })
+                                                    }}>
+                                                    <CancelIcon />
+                                                </IconButton>)
+                                            }
+                                        </Grid>
+                                    </Grid>
+                                    <ImagePreview
+                                        id={i}
+                                        image={o.imagePreview ? o.imagePreview : null}
+                                        onClick={removeImageFromOption}
                                     />
                                 </Box>
-                            </>
-                        )}
-                        {(type === questionType.CheckBox || type === questionType.MultipleChoice
-                            || type === questionType.TrueOrFalse) && (
-                            <Box mt={2}>
-                                <Typography variant="body2">
-                                    Choices
-                                </Typography>
-                                {option?.value?.map((o, i) => (
-                                    <Box key={i} sx={{ display: 'unset' }}>
-                                        <Grid
-                                            container
-                                            alignItems="center"
-                                            sx={{ mt: 1 }}>
-                                            <Grid item xs={1}>
-                                                {(type === questionType.MultipleChoice || type === questionType.TrueOrFalse) && (
-                                                    <Radio
-                                                        checked={o.isAnswer}
-                                                        onChange={(_e) => handleAnswerChange(i)}
-                                                    />
-                                                )}
-                                                {type === questionType.CheckBox && (
-                                                    <Checkbox
-                                                        checked={o.isAnswer}
-                                                        onChange={(_e) => handleAnswerChange(i, true)}
-                                                    />
-                                                )}
-                                            </Grid>
-                                            <Grid item xs={9}>
-                                                <TextField
-                                                    value={o.text}
-                                                    onChange={(e) => onChangeOption(e, i)}
-                                                    variant="standard"
-                                                    fullWidth
-                                                    autoComplete="off"
-                                                />
-                                            </Grid>
-                                            <Grid item xs={1}>
-                                                <input
-                                                    style={{ display: "none" }}
-                                                    id={`new-question-option-image-${i}`}
-                                                    type="file"
-                                                    accept="image/png, image/jpeg"
-                                                    onChange={(e) => onChangeImageOption(e, i)}
-                                                    onClick={(e) => {e.target.value = ''}}
-                                                />
-                                                <label htmlFor={`new-question-option-image-${i}`}>
-                                                    <IconButton
-                                                        component="span"
-                                                    >
-                                                        <CropOriginalIcon/>
-                                                    </IconButton>
-                                                </label>
-                                            </Grid>
-                                            <Grid item xs={1}
-                                            >
-                                                {option?.value.length > 1 && (
-                                                    <IconButton
-                                                        color="error"
-                                                        onClick={() => {
-                                                            let newOption = option.value.filter((_disable, j) => {
-                                                                return j !== i
-                                                            })
-                                                            setOption({ value: newOption })
-                                                        }}>
-                                                        <CancelIcon />
-                                                    </IconButton>)
-                                                }
-                                            </Grid>
-                                        </Grid>
-                                        <ImagePreview
-                                            id={i}
-                                            image={o.imagePreview ? o.imagePreview : null}
-                                            onClick={removeImageFromOption}
-                                        />
-                                    </Box>
-                                ))}
-                            </Box>
-                        )}
-                        {type !== questionType.FillInTheBlank && (
-                            <Grid container sx={{ mt: 1 }}>
-                                <Grid item xs={1}/>
-                                <Grid item xs={11}>
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        onClick={() => setOption({ value: [...option.value,
-                                                { text: '', image: null, imagePreview: null, isAnswer: false }] })}
-                                        disabled={option.value.length >= 5}>
-                                        New Option
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        )}
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'end',
-                                mt: 3,
-                            }}
-                        >
-                            {manualReset && (
+                            ))}
+                        </Box>
+                    )}
+                    {type !== questionType.FillInTheBlank && (
+                        <Grid container sx={{ mt: 1 }}>
+                            <Grid item xs={1}/>
+                            <Grid item xs={11}>
                                 <Button
                                     variant="outlined"
-                                    color="error"
-                                    endIcon={(<CancelIcon fontSize="small" />)}
                                     size="small"
-                                    sx={{ mr: 1 }}
-                                    onClick={reset}
-                                >
-                                    Reset
+                                    onClick={() => setOption({ value: [...option.value,
+                                            { text: '', image: null, imagePreview: null, isAnswer: false }] })}
+                                    disabled={option.value.length >= 5}>
+                                    New Option
                                 </Button>
-                            )}
+                            </Grid>
+                        </Grid>
+                    )}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'end',
+                            mt: 3,
+                        }}
+                    >
+                        {manualReset && (
                             <Button
                                 variant="outlined"
-                                color="primary"
+                                color="error"
+                                endIcon={(<CancelIcon fontSize="small" />)}
                                 size="small"
-                                endIcon={(<SaveIcon fontSize="small" />)}
-                                sx={{ ml: 1 }}
-                                onClick={handleOnSave}
+                                sx={{ mr: 1 }}
+                                onClick={reset}
                             >
-                                Save
+                                Reset
                             </Button>
-                        </Box>
-                    </QuestionContainer>
-                </>
-            ):(
-                <Box sx={{ ml: 3, mt: 3 }}>
-                    <Typography variant="cool">Cannot set more question.</Typography>
-                </Box>
-            )}
+                        )}
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            endIcon={(<SaveIcon fontSize="small" />)}
+                            sx={{ ml: 1 }}
+                            onClick={handleOnSave}
+                        >
+                            Save
+                        </Button>
+                    </Box>
+                </QuestionContainer>
+            </>
         </>
     )
 }

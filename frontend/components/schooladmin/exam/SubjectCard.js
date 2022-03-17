@@ -33,9 +33,9 @@ const SubjectCard = ({ subject, published }) => {
                     variant="body1"
                 >
                     <Typography
-                        color={subject?.question_count !== subject?.total_questions ? 'error' : 'black'} component="span"
-                    >{subject?.question_count}</Typography>
-                    /{subject?.total_questions} items
+                        color={subject?.current_score !== subject?.total_questions ? 'error' : 'black'} component="span"
+                    >{subject?.current_score ? subject?.current_score : 0}</Typography>
+                    /{subject?.total_questions} score
                 </Typography>
             </CardContent>
             <Box sx={{ flexGrow: 1 }} />

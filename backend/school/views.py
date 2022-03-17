@@ -1,3 +1,4 @@
+from django.db.models import Count, Sum, Prefetch
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
@@ -10,10 +11,9 @@ from rest_framework import filters
 
 from .serializers import ExamSerializer, Exam, Subject, Question, QuestionSerializer, School, SchoolSerializer, Result, \
     ResultSerializer, ResultSingleSerializer, StudentSerializer, StudentApplied, Student, AppliedStudentSerializer, \
-    NotificationSerializer
+    NotificationSerializer, Choice
 from rest_framework.permissions import IsAuthenticated
 import pandas as pd
-from sklearn.linear_model import LinearRegression
 
 class ExamViewSet(mixins.ListModelMixin,
                   mixins.UpdateModelMixin,
@@ -109,17 +109,17 @@ class ExamViewSet(mixins.ListModelMixin,
 class QuestionListCreate(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated]
-
+    '''
     def get_queryset(self):
-        queryset = Question.objects.filter(subject_id=self.kwargs['pk'])
         search = self.request.query_params.get('search')
         if search is not None:
             queryset = queryset.filter(text__contains=search)
         return queryset
+    '''
 
     def list(self, request, *args, **kwargs):
-        qs = self.get_queryset()
-        questions = self.get_serializer(qs, many=True).data
+        queryset = Question.objects.filter(subject_id=self.kwargs['pk']).prefetch_related('question_choices')
+        questions = self.get_serializer(queryset, many=True).data
         try:
             exam = Exam.objects.get(school__user_id=request.user.id)
             subject = Subject.objects.get(pk=kwargs['pk'], exam=exam)
@@ -130,6 +130,7 @@ class QuestionListCreate(generics.ListCreateAPIView):
         data['subject'] = subject.name
         data['total_question'] = subject.total_questions
         data['is_published'] = exam.is_published
+        data['current_score'] = subject.current_score
         data['questions'] = questions
         return Response({ 'subject_questions': data }, status=status.HTTP_200_OK)
 
@@ -149,8 +150,23 @@ class QuestionUpdateDestroy(generics.CreateAPIView,
     def create(self, request, *args, **kwargs):
         if 'checked' in request.data:
             if len(request.data) >= 1:
+                subject_id = -1
+                cnt = 0
                 for i in request.data['checked']:
-                    Question.objects.get(pk=i).delete()
+                    question = Question.objects.get(pk=i)
+                    subject_id = question.subject_id
+                    choices = Choice.objects.filter(question=question)
+                    if question.type == 2:
+                        cnt += len(choices[0].correct.split(','))
+                    else:
+                        for j in choices:
+                            if j.correct == 'true':
+                                cnt += 1
+                    question.delete()
+                if subject_id != -1:
+                    subject = Subject.objects.get(pk=subject_id)
+                    subject.current_score = subject.current_score - cnt
+                    subject.save()
             else:
                 return Response({'error': '1'} ,status=status.HTTP_200_OK)
         else:

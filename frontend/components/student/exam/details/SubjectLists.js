@@ -20,7 +20,7 @@ export default function SubjectLists({ subjects }) {
                                     Subject
                                 </TableCell>
                                 <TableCell align="left">
-                                    No of items
+                                    Total Score
                                 </TableCell>
                             </TableRow>
                         </TableHead>
@@ -32,7 +32,7 @@ export default function SubjectLists({ subjects }) {
                                             {s.name}
                                         </TableCell>
                                         <TableCell>
-                                            {s.question_count} items
+                                            {s.question_count} / {s.question_count}
                                         </TableCell>
                                     </TableRow>
                                 )

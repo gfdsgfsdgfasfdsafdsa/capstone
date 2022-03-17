@@ -32,7 +32,8 @@ const QuestionHeader = ({ questionCount, status, setStatus, totalQuestion, id, u
                     error: false, loading:false, success: true, infoMessage: `${bak.length} Deleted.` })
                 mutate({
                     ...subjectQuestions,
-                    questions: subjectQuestions?.questions?.filter(item => !bak.includes(item.id)).questions
+                    questions: subjectQuestions?.questions?.filter(item => !bak.includes(item.id)).questions,
+                    current_score: subjectQuestions.subject_questions.current_score - (bak.length - 1)
                 })
             }
         }).catch((_e) => {
@@ -54,13 +55,24 @@ const QuestionHeader = ({ questionCount, status, setStatus, totalQuestion, id, u
                     paddingBottom: 2
                 },
             }}>
+                <Box>
+                    {questionCount > totalQuestion && (
+                        <Typography
+                            sx={{ mr: 1, lineHeight: 1.75 }}
+                            variant="caption"
+                            color="error"
+                        >
+                            Warning: Score Limit Exceeded.
+                        </Typography>
+                    )}
+                </Box>
                 <Box sx={{ display: 'flex', alignItems:'center', flexWrap: 'wrap'  }}>
                     <Typography
                         sx={{ mr: 1, lineHeight: 1.75 }}
                         variant="body1"
                     >
                         {questionCount || questionCount === 0 ?
-                            `Question count: ${questionCount}/${totalQuestion}` : null
+                            `Score Count: ${questionCount}/${totalQuestion}` : null
                         }
                     </Typography>
                     {update && (

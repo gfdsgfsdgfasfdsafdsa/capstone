@@ -385,7 +385,7 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
         if(!exam?.is_published){
             let notEqual = false
             exam?.exam_subjects.map((s) => {
-                if(s.question_count !== s.total_questions){
+                if(s.current_score !== s.total_questions){
                     notEqual = true
                 }
             })
@@ -394,7 +394,7 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                     success: false,
                     error: true,
                     loading: false,
-                    message: 'Questions must be equal to total question.'
+                    message: 'Score must be equal.'
                 })
                 return
             }

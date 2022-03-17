@@ -114,7 +114,6 @@ const Actions = memo(function Actions(props) {
 const CheckDelete = memo(function CheckDelete(props) {
     const {
         checkBoxSelected,
-        checked,
         qId,
         qI,
     } = props
@@ -125,7 +124,6 @@ const CheckDelete = memo(function CheckDelete(props) {
                 Question {qI+1}
                 <Checkbox
                     onClick={() => checkBoxSelected(qId)}
-                    checked={checked.includes(qId)}
                     size="small"
                 />
             </Box>
@@ -134,7 +132,7 @@ const CheckDelete = memo(function CheckDelete(props) {
 });
 
 const QuestionContainer = memo(function QuestionContainer(props) {
-    console.log('test')
+
     const {
         q,
         qI,
@@ -406,7 +404,7 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
     )
 });
 
-function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, hideChoices }){
+function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, hideChoices, mutate, state }){
     //always use Json.parse so the original backup will not be modified
     const bak = useRef(JSON.parse(JSON.stringify(subjectQuestions)))
     const [questions, setQuestions] = useState(subjectQuestions)
@@ -474,6 +472,7 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
     const handleUpdate = useCallback(async (qI, q) => {
         setStatus({ error: false, loading: false, success: false, infoMessage: '' })
         let data = new FormData()
+        let total_score = 0
         //questions[qI].
         data.append('id', q.id)
         data.append('text', q.text)
@@ -496,6 +495,7 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
         if(questionType[q.type] === questionType.FillInTheBlank){
             data.append('images', null)
             let qLength = q.text.split('_').length - 1
+            total_score = qLength
             if(qLength <= 0){
                 setStatus({ error: true, loading: false, success: false, infoMessage: `Question ${qI+1}: Please set a correct answer.` })
                 return
@@ -543,8 +543,10 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                     setStatus({ error: true, loading: false, success: false, infoMessage: `Question ${qI+1}: Fields Cannot be empty.` })
                     return
                 }
-                if(c.correct === 'true')
+                if(c.correct === 'true'){
                     hasCorrect = true
+                    total_score++
+                }
 
                 if(c.id)
                     cd['id'] = c.id
@@ -556,6 +558,8 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                 return
             }
         }
+        total_score *= q.score
+        data.append('current_score', total_score)
 
         setStatus({ error: false, loading: true, success: false, infoMessage: 'Saving...' })
         setQuestions(prev =>
@@ -573,6 +577,7 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
             setQuestions(prev =>
                 prev.map(item => (item.id === q.id ? { ...item, expanded: '' } : item))
             );
+            mutate({ ...state, current_score: state.current_score + total_score })
         }).catch((_e) => {
             setQuestions(prev =>
                 prev.map(item => (item.id === q.id ? { ...item, expanded: `panel${q.id}` } : item))
@@ -996,7 +1001,6 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                             key={q.id}>
                             <CheckDelete
                                 checkBoxSelected={checkBoxSelected}
-                                checked={checked}
                                 qI={qI}
                                 qId={q.id}
                             />
@@ -1020,8 +1024,6 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                                 onClickNewOption={onClickNewOption}
                                 handleCancel={handleCancel}
                                 handleUpdate={handleUpdate}
-                                checkBoxSelected={checkBoxSelected}
-                                checked={checked}
                             />
                         </Box>
                     )

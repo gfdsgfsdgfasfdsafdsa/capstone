@@ -1,4 +1,6 @@
 import json
+
+from django.db.models import Sum
 from rest_framework import serializers
 from .models import Exam, Subject, Question, Choice
 from accounts.models import School, Student, StudentApplied, User
@@ -24,10 +26,11 @@ class QuestionSerializer(serializers.ModelSerializer):
     images = serializers.ListField(write_only=True)
     choices_list = serializers.ListField(write_only=True)
     image = serializers.SerializerMethodField('_image')
+    current_score = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Question
-        fields = ['id', 'image', 'text', 'type', 'score', 'choices', 'images', 'choices_list']
+        fields = ['id', 'image', 'text', 'type', 'score', 'choices', 'images', 'choices_list', 'current_score']
 
 
     def _image(self, obj):
@@ -42,6 +45,8 @@ class QuestionSerializer(serializers.ModelSerializer):
 
         images = question.pop('images')
         choices = question.pop('choices_list')
+        current_score = question.pop('current_score')
+        subject.current_score =  subject.current_score + current_score
 
         ordered_images = [None] * len(images)
         for image in images:
@@ -58,12 +63,29 @@ class QuestionSerializer(serializers.ModelSerializer):
             choice['image'] = ordered_images[i]
             Choice.objects.create(**choice, question=question)
             i += 1
+
+        subject.save()
         return question
 
     def update(self, instance, validated_data):
         # choices = validated_data.pop('choices')
         images = validated_data.pop('images')
         choices = validated_data.pop('choices_list')
+
+        # Can be deleted in pack
+        current_score = validated_data.pop('current_score')
+        remove_cnt = 0
+        for k in Choice.objects.filter(question_id=instance.id):
+            if instance.type == 2:
+                remove_cnt += len(k.correct.split(','))
+            else:
+                if k.correct == 'true':
+                    remove_cnt += 1
+        print(remove_cnt)
+        subject = Subject.objects.get(pk=instance.subject_id)
+        subject.current_score = (subject.current_score + current_score) - remove_cnt
+        subject.save()
+        # Can be deleted in pack
 
         ordered_images = [None] * len(images)
         for image in images:
@@ -117,6 +139,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             if choice.id not in keep_choices:
                 choice.delete()
 
+
         return instance
 
 '''
@@ -136,14 +159,11 @@ class SubjectQuestionSerializer(serializers.ModelSerializer):
 '''
 
 class SubjectSerializer(serializers.ModelSerializer):
-    question_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Subject
-        fields = ['id', 'name', 'question_count', 'total_questions']
+        fields = ['id', 'name', 'current_score', 'total_questions']
 
-    def get_question_count(self, obj):
-        return Question.objects.filter(subject=obj).count()
 
 class ExamSerializer(serializers.ModelSerializer):
     exam_subjects = SubjectSerializer(read_only=True, many=True)
