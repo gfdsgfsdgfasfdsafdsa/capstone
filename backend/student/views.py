@@ -31,9 +31,13 @@ class SchoolList(generics.ListAPIView, generics.UpdateAPIView):
         #return School.objects.exclude(pk__in=res, applied_school__status='Accepted').prefetch_related('applied_school')
         res = Result.objects.filter(student__user_id=self.request.user.id, submitted=True).select_related('school', 'student').values_list('school_id')
         if status_ is None or s == 'None':
-            return School.objects.filter(~Q(applied_school__isnull=True) & Q(school_exam__is_published=True)
-                                         & ~Q(applied_school__student__user_id=self.request.user.id)
-                                         ).prefetch_related('applied_school').exclude(pk__in=res)
+            student_applied = StudentApplied.objects.filter(student__user_id=self.request.user.id).values_list('school_id')
+            '''
+            return School.objects.filter(Q(applied_school__isnull=True) & Q(school_exam__is_published=True) &
+                                         Q(applied_school__student__user_id=self.request.user.id)
+                                         )
+             '''
+            return School.objects.filter(school_exam__is_published=True).exclude(pk__in=student_applied)
         else:
             return School.objects.filter(Q(applied_school__status=s) & Q(school_exam__is_published=True)
                                          & Q(applied_school__student__user_id=self.request.user.id)

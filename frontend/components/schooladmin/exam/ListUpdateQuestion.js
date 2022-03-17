@@ -23,7 +23,7 @@ import questionType from '../../../libs/questionType'
 import axiosInstance from "../../../utils/axiosInstance";
 import QuestionText from "../../question_layout/QuestionText";
 import ImageView from "../../question_layout/ImageView";
-import FillInTheBlank from "./components/fillintheblank";
+import FillInTheBlank from "./components/FillInTheBlank";
 import TypeSelectField from './components/TypeSelectField'
 import PointsTextField from './components/PointsTextField'
 import QuestionTextField from './components/QuestionTextField'

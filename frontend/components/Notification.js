@@ -317,14 +317,16 @@ const Notification = ({ isStudent }) => {
                 {notifD?.map((i, j) => {
                     let seen = i.is_seen_by_school
                     let name = i?.student?.name
+                    let date = i?.datetime_created
                     if(isStudent){
                         seen = i.is_seen_by_student
                         name = i.school.name
+                        date = i?.datetime_modified
                     }
                     if (notifD.length === j + 1)
-                        return notifItem(i.id, j, name, seen, i.datetime_created, i.status, true)
+                        return notifItem(i.id, j, name, seen, date, i.status, true)
                     else
-                        return notifItem(i.id, j, name, seen, i.datetime_created, i.status, false)
+                        return notifItem(i.id, j, name, seen, date, i.status, false)
                 })}
                 {((size * NOTIFICATION_COUNT) - NOTIFICATION_COUNT + 1) > notif?.count ? (
                     <MenuItem

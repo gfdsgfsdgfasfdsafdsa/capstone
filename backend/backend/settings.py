@@ -17,7 +17,7 @@ SECRET_KEY = 'django-insecure-n=$t1zm5s4(ru80y6$7e1jpth15tq&6fp&)&n+a))6)0f&jtg_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['backend-324.herokuapp.com', '127.0.0.1']
 
 
 cloudinary.config(cloud_name='dt8yfjfwn',
@@ -69,6 +69,8 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 INTERNAL_IPS = [
