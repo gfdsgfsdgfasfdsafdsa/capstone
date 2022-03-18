@@ -54,7 +54,7 @@ const NewChoice = memo(function NewChoice(props) {
                                 sm: 0,
                             }
                         }}
-                        disabled={q.choices.length >= 5}
+                        disabled={q.choices?.length >= 5}
                         onClick={() => onClick(qId)}
                         variant="outlined"
                         size="small"
@@ -70,7 +70,6 @@ const NewChoice = memo(function NewChoice(props) {
 
 const Actions = memo(function Actions(props) {
     const {
-        handleCancel,
         handleUpdate,
         qI,
         q,
@@ -85,16 +84,6 @@ const Actions = memo(function Actions(props) {
                     mt: 3,
                 }}
             >
-                <Button
-                    variant="outlined"
-                    size="small"
-                    color="error"
-                    startIcon={(<CancelIcon fontSize="small" />)}
-                    sx={{ ml: 1 }}
-                    onClick={() => handleCancel()}
-                >
-                    Cancel
-                </Button>
                 <Button
                     variant="outlined"
                     size="small"
@@ -155,7 +144,6 @@ const QuestionContainer = memo(function QuestionContainer(props) {
         onChangeFillInTheBlank,
 
         onClickNewOption,
-        handleCancel,
         handleUpdate,
 
     } = props
@@ -256,7 +244,6 @@ const QuestionContainer = memo(function QuestionContainer(props) {
                         <Actions
                             qI={qI}
                             q={q}
-                            handleCancel={handleCancel}
                             handleUpdate={handleUpdate}
                         />
                     </Box>
@@ -406,15 +393,16 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
 
 function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, hideChoices, mutate, state }){
     //always use Json.parse so the original backup will not be modified
-    const bak = useRef(JSON.parse(JSON.stringify(subjectQuestions)))
+    //const bak = useRef(JSON.parse(JSON.stringify(subjectQuestions)))
     const [questions, setQuestions] = useState(subjectQuestions)
+    const backup = useRef(null)
 
     useEffect(() => {
-        bak.current = JSON.parse(JSON.stringify(subjectQuestions))
-        setQuestions(subjectQuestions)
+        //bak.current = JSON.parse(JSON.stringify(subjectQuestions))
+        //setQuestions(subjectQuestions)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [subjectQuestions])
+    }, [])
 
     /*
     useEffect(() => {
@@ -439,18 +427,21 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
         setStatus({ error: false, loading:false, success: false, infoMessage: '' })
         //prevent from closing
         const panel = `panel${qId}`
+        let ques = null
         if(panel !== questions?.expanded){
             setQuestions(setPrev => {
                 return setPrev.map((question) => {
                     if(question.id === qId){
+                        ques = question
                         return { ...question, expanded: panel }
-                    }else if(question.id === lastOpen.current){
-                        return { ...question, expanded: '' }
+                    }else if(question.id === lastOpen.current && backup.current !== null){
+                            return { ...backup.current, expanded: '' }
                     }
 
                     return question
                 })
             })
+            backup.current = ques
             lastOpen.current = qId
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -460,14 +451,19 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
     const handleCancel = () => {
         setQuestions(JSON.parse(JSON.stringify(bak.current)))
     }
-     */
     const handleCancel = useCallback((qId) => {
-        setQuestions(prev =>
-            prev.map(questions => ({ ...questions, expanded: '' }))
-        );
-        setQuestions(JSON.parse(JSON.stringify(bak.current)))
+        setQuestions(setPrev => {
+            return setPrev.map((question) => {
+                if(question.id === qId){
+                    return backup.current
+                }
+
+                return question
+            })
+        })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+     */
 
     const handleUpdate = useCallback(async (qI, q) => {
         setStatus({ error: false, loading: false, success: false, infoMessage: '' })
@@ -571,13 +567,14 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                 'Content-Type': 'multipart/form-data'
             }
         }).then((_r) => {
-            bak.current = JSON.parse(JSON.stringify(questions))
+            //bak.current = JSON.parse(JSON.stringify(questions))
             setStatus({
                 error: false, loading:false, success: true, infoMessage: 'Updated.' })
             setQuestions(prev =>
-                prev.map(item => (item.id === q.id ? { ...item, expanded: '' } : item))
+                prev.map(item => (item.id === q.id ? { ...q, expanded: '' } : item))
             );
             mutate({ ...state, current_score: state.current_score + total_score })
+            backup.current = null
         }).catch((_e) => {
             setQuestions(prev =>
                 prev.map(item => (item.id === q.id ? { ...item, expanded: `panel${q.id}` } : item))
@@ -665,7 +662,9 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                                 image: null,
                             }],
                         }
-                    }else if(type === questionType.TrueOrFalse){
+                    }
+                    /*
+                    else if(type === questionType.TrueOrFalse){
                         return {
                             ...question,
                             type: questionType[type],
@@ -682,7 +681,9 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                                 },
                             ],
                         }
-                    }else{
+                    }
+                     */
+                    else{
                         return {
                             ...question,
                             type: questionType[type],
@@ -1022,7 +1023,6 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                                 onChangeType={onChangeType}
                                 onChangeFillInTheBlank={onChangeFillInTheBlank}
                                 onClickNewOption={onClickNewOption}
-                                handleCancel={handleCancel}
                                 handleUpdate={handleUpdate}
                             />
                         </Box>

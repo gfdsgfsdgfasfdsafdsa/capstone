@@ -29,7 +29,7 @@ export const DashboardLayout = (props) => {
         setItems(setRoutes())
     }, [])
 
-    //if(!items) return <Loading/>
+    if(!items || !user) return <Loading/>
 
     return (
         <>

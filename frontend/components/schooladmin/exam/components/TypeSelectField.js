@@ -23,11 +23,6 @@ const TypeSelectField = (props) => {
                 >
                     Multiple Choice
                 </MenuItem>
-                <MenuItem
-                    value={questionType.TrueOrFalse}
-                >
-                    True or False
-                </MenuItem>
                 <MenuItem value={questionType.CheckBox}>
                     CheckBox
                 </MenuItem>

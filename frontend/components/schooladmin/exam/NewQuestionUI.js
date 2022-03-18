@@ -152,6 +152,7 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
 
     const onChangeTypeSelect = (e) => {
         setType(e.target.value)
+        /*
         if(e.target.value === questionType.TrueOrFalse){
             setOption({
                 value: [
@@ -161,11 +162,14 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
             });
             return
         }
+         */
         let optionValue = [...option.value];
+        /*
         if(option.value[0].text === 'True'){
             optionValue.splice(1, optionValue.length - 1)
             optionValue[0].text = "Answer1"
         }
+        */
         for (let i = 0; i < optionValue.length; i++) {
             optionValue[i].isAnswer = false
         }

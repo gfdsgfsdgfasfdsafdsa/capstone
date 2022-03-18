@@ -33,6 +33,7 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 FRONT_END_URL = 'http://localhost:2222'
+# FRONT_END_URL = 'https://courseme.vercel.app'
 #  -------------- Main Config ----------
 
 
@@ -70,7 +71,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
+    #'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 INTERNAL_IPS = [
