@@ -232,7 +232,7 @@ class SchoolExamRetrieve(generics.RetrieveAPIView,):
         for subject in subjects_obj:
             s = {
                 'name': subject.name,
-                'question_count': subject.subject_questions.count()
+                'question_count': subject.total_questions
             }
             subjects.append(s)
         data['subjects'] = subjects
