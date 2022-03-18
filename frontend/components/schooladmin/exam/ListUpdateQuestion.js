@@ -399,10 +399,10 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
 
     useEffect(() => {
         //bak.current = JSON.parse(JSON.stringify(subjectQuestions))
-        //setQuestions(subjectQuestions)
+        setQuestions(subjectQuestions)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [subjectQuestions])
 
     /*
     useEffect(() => {
