@@ -1,4 +1,6 @@
 from datetime import datetime
+from django.utils import timezone
+
 from django.db.models import Count, Sum, Prefetch
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -399,21 +401,21 @@ class StudentAppliedList(generics.ListAPIView, generics.UpdateAPIView):
                 for i in data['student_ids']:
                     s = StudentApplied.objects.get(student_id=i, school__user_id=self.request.user.id)
                     s.status = 'Accepted'
-                    s.datetime_modified = datetime.now()
+                    s.datetime_modified = timezone.now()
                     s.save()
         elif 'student_ids' in request.data and 'reject' in request.data:
             if len(data['student_ids']) >= 1:
                 for i in data['student_ids']:
                     s = StudentApplied.objects.get(student_id=i, school__user_id=self.request.user.id)
                     s.status = 'Rejected'
-                    s.datetime_modified = datetime.now()
+                    s.datetime_modified = timezone.now()
                     s.save()
         elif 'student_ids' in request.data and 'pending' in request.data:
             if len(data['student_ids']) >= 1:
                 for i in data['student_ids']:
                     s = StudentApplied.objects.get(student_id=i, school__user_id=self.request.user.id)
                     s.status = 'Pending'
-                    s.datetime_modified = datetime.now()
+                    s.datetime_modified = timezone.now()
                     s.save()
         else:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

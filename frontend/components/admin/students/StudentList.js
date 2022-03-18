@@ -127,7 +127,7 @@ export default function StudentList({ studentsList, activated, setActivated, che
                 setPageIndex(1)
             }).catch((_e) => {
                 setChecked(bak)
-                alert('Error', e)
+                alert(e)
             })
     }
 
@@ -143,7 +143,7 @@ export default function StudentList({ studentsList, activated, setActivated, che
                 setPageIndex(1)
             }).catch((e) => {
                 setChecked(bak)
-                alert('Error', e)
+                alert(e)
             })
     }
 

@@ -16,8 +16,8 @@ export default function Applied({ studentAppliedList }){
     const [searchText, setSearchText] = useState('')
     const [checked, setChecked] = useState([])
     const [status, setStatus] = useState('Pending')
-    const { mutate } = useSWRConfig()
-    const { data: studentList, isValidating } = useSWR(`school/exam/students/applied/?page=${pageIndex}&search=${searchText}&status=${status}`
+    //const { mutate } = useSWRConfig()
+    const { data: studentList, isValidating, mutate } = useSWR(`school/exam/students/applied/?page=${pageIndex}&search=${searchText}&status=${status}`
         ,{ fallbackData: studentAppliedList, revalidateOnFocus: false }
     );
 

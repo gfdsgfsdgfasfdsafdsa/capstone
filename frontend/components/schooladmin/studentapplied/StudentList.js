@@ -22,6 +22,7 @@ import {useState} from "react";
 import AppliedStatus from "../../AppliedStatus";
 import AxiosInstance from "../../../utils/axiosInstance";
 import { PAGINATION_COUNT, paginationRecordCount } from "../../../config/settings";
+import schoolList from "../../student/exam/SchoolList";
 
 function Row(props) {
     const { row, bg, onChecked, checked, status } = props;
@@ -100,7 +101,7 @@ function Row(props) {
 }
 
 export default function StudentList({ studentsList, checked, setChecked, mutate,
-    status, setStatus, pageIndex, setPageIndex, isValidating,
+    status, setStatus, pageIndex, setPageIndex, isValidating
 }) {
 
     async function checkBoxSelected(id){
@@ -128,7 +129,7 @@ export default function StudentList({ studentsList, checked, setChecked, mutate,
             accept: 1,
         })
             .then((_r) => {
-                mutate('school/exam/students/applied/?page=1&search=&status=Pending')
+                mutate()
                 setPageIndex(1)
             }).catch((_e) => {
                 setChecked(bak)
@@ -143,7 +144,8 @@ export default function StudentList({ studentsList, checked, setChecked, mutate,
             reject: 1,
         })
             .then((_r) => {
-                mutate('school/exam/students/applied/?page=1&search=&status=Pending')
+                mutate()
+                //mutate('school/exam/students/applied/?page=1&search=&status=Pending')
                 setPageIndex(1)
             }).catch((_e) => {
                 setChecked(bak)
@@ -158,7 +160,8 @@ export default function StudentList({ studentsList, checked, setChecked, mutate,
             pending: 1,
         })
             .then((_r) => {
-                mutate(`school/exam/students/applied/?page=1&search=&status=${status}`)
+                mutate()
+                //mutate(`school/exam/students/applied/?page=1&search=&status=${status}`)
                 setPageIndex(1)
             }).catch((_e) => {
                 setChecked(bak)
