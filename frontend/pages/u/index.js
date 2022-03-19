@@ -4,6 +4,7 @@ import { Graph } from '../../components/student/dashboard/Graph';
 import { DashboardLayout } from '../../components/DashboardLayout';
 import Recommended from "../../components/student/dashboard/Recommended";
 import NextNProgress from "nextjs-progressbar";
+import Survey from "../../components/student/Survey";
 
 const Home = () => (
     <>
@@ -20,6 +21,9 @@ const Home = () => (
                 py: 2
             }}>
             <Container maxWidth={false}>
+                <Box sx={{ marginBottom: '20px' }}>
+                    <Survey additionalMessage="true"/>
+                </Box>
                 <Grid
                     container
                     spacing={3}>
@@ -40,6 +44,7 @@ const Home = () => (
                         <Recommended/>
                     </Grid>
                 </Grid>
+                
             </Container>
         </Box>
     </>
