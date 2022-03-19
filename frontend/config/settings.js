@@ -1,5 +1,5 @@
 export const PAGINATION_COUNT = 2
-export const AVAILABLE_STRANDS = ['ICT', 'GAS', 'HUMSS']
+export const AVAILABLE_STRANDS = ['ICT', 'STEM', 'HUMMS', 'GAS', 'ABM']
 export const GENDER = ['Male', 'Female']
 export const NOTIFICATION_COUNT = 3
 

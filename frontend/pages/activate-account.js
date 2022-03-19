@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import {useEffect, useState} from "react";
 import axios from "axios";
 import Link from 'next/link'
+import Head from 'next/head';
 
 export default function ActivateAccount(){
     const router = useRouter()
@@ -35,6 +36,11 @@ export default function ActivateAccount(){
 
     return(
         <Box>
+            <Head>
+                <title>
+                    Register
+                </title>
+            </Head>
             <Box sx={{ height: '65px', backgroundColor: '#1F2937', display: 'flex', alignItems: 'center' }}>
                 <Container maxWidth="md">
                     <Typography color="white" variant="h5">

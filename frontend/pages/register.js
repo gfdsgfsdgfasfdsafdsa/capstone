@@ -300,24 +300,21 @@ const Register = () => {
                             sx={{
                                 alignItems: 'center',
                                 display: 'flex',
-                                ml: -1
+                                py: 1,
                             }}
                         >
-                            <Checkbox
-                                name="policy"
-                                size="small"
-                            />
                             <Typography
                                 color="textSecondary"
                                 variant="body2"
                             >
-                                I have read the
+                                By Signing up you agree with our
                                 {' '}
                                 <NextLink
-                                    href="#"
+                                    href="/terms-and-conditions"
                                     passHref
                                 >
                                     <Link
+                                        target="_blank"
                                         color="primary"
                                         underline="always"
                                         variant="subtitle2"
