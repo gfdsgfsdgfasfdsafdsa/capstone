@@ -94,27 +94,25 @@ export default function Single({ result }){
                         </TableContainer>
                     </CardContent>
                 </Card>
-                <Box mt={3} pb={10} ml={3}>
-                    <>
-                        <Box>
+                <Card sx={{ padding:'20px', marginTop: '20px' }}>
+                    <Box>
+                        <Typography variant="cool" mb={2}>
+                            Course Recommended
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="caption" mb={2}>
+                            Same no. in ranking has no particular order
+                        </Typography>
+                    </Box>
+                    {result?.course_recommended.map((d) => (
+                        <Box key={d.id} sx={{ pl: 5 }}>
                             <Typography variant="cool" mb={2}>
-                                Course Recommended
+                                {d.rank} <span style={{ marginLeft: '10px' }}>{d.course}</span>
                             </Typography>
                         </Box>
-                        <Box>
-                            <Typography variant="caption" mb={2}>
-                                Same no. in ranking has no particular order
-                            </Typography>
-                        </Box>
-                        {result?.course_recommended.map((d) => (
-                            <Box key={d.id} sx={{ pl: 5 }}>
-                                <Typography variant="cool" mb={2}>
-                                    {d.rank} <span style={{ marginLeft: '10px' }}>{d.course}</span>
-                                </Typography>
-                            </Box>
-                        ))}
-                    </>
-                </Box>
+                    ))}
+                </Card>
             </Container>
         </>
     )

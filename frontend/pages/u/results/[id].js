@@ -6,6 +6,8 @@ import Single from "../../../components/student/pages/result/Single";
 import Loading from "../../../components/Loading";
 import NextNProgress from "nextjs-progressbar";
 import {useRef} from "react";
+import Survey from "../../../components/student/Survey";
+import { Box, Container } from '@mui/material';
 
 const ResultId = () => {
     const router = useRouter()
@@ -43,10 +45,16 @@ const ResultId = () => {
                 </title>
             </Head>
             <DashboardLayout title="Result">
+                <Container maxWidth="md" sx={{ marginTop:'20px' }}>
+                    <Box>
+                        <Survey/>
+                    </Box>
+                </Container>
                 {result ?
                     <Single result={result}/> :
                     <Loading/>
                 }
+                
             </DashboardLayout>
         </>
     )
