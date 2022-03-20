@@ -75,6 +75,7 @@ const FillInTheBlank = memo(function FillInTheBlank(props) {
     )
 });
 
+
 const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
 
     const [question, setQuestion] = useState({
@@ -198,12 +199,12 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
     const handleOnSave = async () => {
         setStatus({ error: false, loading:false, success: false, infoMessage: '' })
         //validate
-        if(!question.text || !score){
-            setStatus({ error: true, loading:false, success: false, infoMessage: 'Error: Text Fields cannot be empty.' })
-            return false
-        }
-
         try{
+            if(!question.text || !score && type !== questionType.Rating){
+                setStatus({ error: true, loading:false, success: false, infoMessage: 'Error: Text Fields cannot be empty.' })
+                return false
+            }
+
             let total_score = 0
             let data = new FormData()
             data.append('text', question.text)
@@ -213,7 +214,10 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                 data.append('images', null)
 
             data.append('type', questionType[type])
-            data.append('score', score)
+            if(questionType.Rating)
+                data.append('score', 0)
+            else
+                data.append('score', score)
             if(type === questionType.FillInTheBlank){
                 //validate
                 let blanksLength = question.text.split('_').length - 1
@@ -237,6 +241,27 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                     "correct": fillInTheBlankAns.join(','),
                 }
                 data.append('choices_list', JSON.stringify(cd))
+
+                total_score *= score
+            }else if(type === questionType.Rating){
+                let emptyField = false
+                option.value.forEach((c, i) => {
+                    //validate
+                    if(!c.text) emptyField = true
+                    //push
+                    data.append('images', null)
+
+                    let cd = {
+                        "text": c.text,
+                        "correct": `${(i+1)}`,
+                    }
+                    data.append('choices_list', JSON.stringify(cd))
+                })
+                if(emptyField){
+                    setStatus({ error: true, loading:false, success: false, infoMessage: 'Error: Text Fields cannot be empty.' })
+                    return
+                }
+                total_score = option.value.length
             }else{
                 let hasCorrect = false
                 let emptyField = false
@@ -268,8 +293,9 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                     setStatus({ error: true, loading:false, success: false, infoMessage: 'Error: Please enter answer.' })
                     return
                 }
+
+                total_score *= score
             }
-            total_score *= score
             data.append('current_score', total_score)
 
             if(!manualReset)
@@ -284,7 +310,8 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                     setStatus({
                         error: false, loading:false, success: true, infoMessage: 'Saved.' })
                     mutate({ ...subjectQuestions, current_score: subjectQuestions.subject_questions.current_score + total_score })
-                }).catch((_e) => {
+                }).catch((e) => {
+                    console.log(e)
                     setStatus({ error: true, loading:false, success: false, infoMessage: 'Failed to saved question.' })
                 })
         }catch(_e){
@@ -315,6 +342,7 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
         })
     }
 
+
     function onChangeScore(e){
         setScore(e.target.value)
     }
@@ -339,9 +367,11 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                     </Box>
                 </Box>
                 <QuestionContainer>
-                    <PointsTextField
-                        value={score}
-                        onChange={onChangeScore}/>
+                    {type !== questionType.Rating && (
+                        <PointsTextField
+                            value={score}
+                            onChange={onChangeScore}/>
+                    )}
                     <QuestionTextField
                         onChangeImageQuestion={onChangeImageQuestion}
                         value={question.text}
@@ -371,8 +401,58 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                             </Box>
                         </>
                     )}
-                    {(type === questionType.CheckBox || type === questionType.MultipleChoice
-                        || type === questionType.TrueOrFalse) && (
+                    {(type === questionType.Rating) && (
+                        <Box mt={2}>
+                            <Typography variant="body2">
+                                Choices
+                            </Typography>
+                            <Typography variant="caption">
+                                The number indicates score
+                            </Typography>
+                            {option?.value?.map((o, i) => (
+                                <Box key={i} sx={{ display: 'unset' }}>
+                                    <Grid
+                                        container
+                                        alignItems="center"
+                                        sx={{ mt: 1 }}>
+                                        <Grid item xs={1} textAlign="right">
+                                            <Radio disabled={true}/>
+                                        </Grid>
+                                        <Grid item xs={1} textAlign="center">
+                                            {i + 1}
+                                        </Grid>
+                                        <Grid item xs={9}>
+                                            <TextField
+                                                value={o.text}
+                                                onChange={(e) => onChangeOption(e, i)}
+                                                variant="standard"
+                                                fullWidth
+                                                autoComplete="off"
+                                            />
+                                        </Grid>
+                                        <Grid
+                                            item xs={1}
+                                            textAlign="right"
+                                        >
+                                            {option?.value.length > 1 && (
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() => {
+                                                        let newOption = option.value.filter((_disable, j) => {
+                                                            return j !== i
+                                                        })
+                                                        setOption({ value: newOption })
+                                                    }}>
+                                                    <CancelIcon />
+                                                </IconButton>)
+                                            }
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+                    {(type === questionType.CheckBox || type === questionType.MultipleChoice) && (
                         <Box mt={2}>
                             <Typography variant="body2">
                                 Choices
@@ -384,7 +464,7 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                                         alignItems="center"
                                         sx={{ mt: 1 }}>
                                         <Grid item xs={1}>
-                                            {(type === questionType.MultipleChoice || type === questionType.TrueOrFalse) && (
+                                            {(type === questionType.MultipleChoice) && (
                                                 <Radio
                                                     checked={o.isAnswer}
                                                     onChange={(_e) => handleAnswerChange(i)}
@@ -458,7 +538,7 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                                     onClick={() => setOption({ value: [...option.value,
                                             { text: '', image: null, imagePreview: null, isAnswer: false }] })}
                                     disabled={option.value.length >= 5}>
-                                    New Option
+                                    New Choice
                                 </Button>
                             </Grid>
                         </Grid>

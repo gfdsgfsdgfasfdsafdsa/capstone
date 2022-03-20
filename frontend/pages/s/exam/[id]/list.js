@@ -54,7 +54,7 @@ function ListQuestion(){
                                     sx={{ mr: 1, lineHeight: 1.75 }}
                                     variant="body1"
                                 >
-                                    Total Question: {subjectQuestions?.subject_questions?.total_question}
+                                    Score Count: {subjectQuestions?.subject_questions?.total_question}
                                 </Typography>
                                 <Box>
                                     <Typography component="div" variant="subtitle1"

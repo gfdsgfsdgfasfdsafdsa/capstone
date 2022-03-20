@@ -179,10 +179,12 @@ const QuestionContainer = memo(function QuestionContainer(props) {
                     <Box px={3}
                          sx={{ paddingTop: '25px'}}
                     >
-                        <PointsTextField
-                            id={q.id}
-                            value={q.score}
-                            onChange={onChangePoints}/>
+                        {questionType[q.type] !== questionType.Rating && (
+                            <PointsTextField
+                                id={q.id}
+                                value={q.score}
+                                onChange={onChangePoints}/>
+                        )}
                         <QuestionTextField
                             id={q.id}
                             questionIndex={qI}
@@ -206,11 +208,16 @@ const QuestionContainer = memo(function QuestionContainer(props) {
                                 question={q.text}
                                 choice={q.choices[0].correct}
                             />
-                        ):(
+                        ) : (
                             <Box mt={2}>
                                 <Typography variant="body2">
-                                    Options
+                                    Choices
                                 </Typography>
+                                {questionType[q.type] === questionType.Rating && (
+                                    <Typography variant="caption">
+                                        The number indicates score
+                                    </Typography>
+                                )}
                                 {q?.choices?.map((c, choiceIndex) => (
                                     <Box key={choiceIndex}>
                                         <ChoiceOption
@@ -257,7 +264,7 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
     const { q, qI, hideChoices = false } = props
 
     function display(q, qI, hideChoices){
-        if(questionType[q.type] === questionType.MultipleChoice){
+        if(questionType[q.type] === questionType.MultipleChoice || questionType[q.type] === questionType.Rating){
             return (
                 <FormControl>
                     <QuestionText
@@ -288,9 +295,11 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
                             })}
                         </RadioGroup>
                     )}
-                    <Typography component="div" variant="caption" mt={1}>
-                        Points: {q.score}
-                    </Typography>
+                    {questionType[q.type] === questionType.MultipleChoice && (
+                        <Typography component="div" variant="caption" mt={1}>
+                            Points: {q.score}
+                        </Typography>
+                    )}
                 </FormControl>
             )
         }else if(questionType[q.type] === questionType.CheckBox){
@@ -481,9 +490,13 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
             data.append('images', null)
 
         data.append('type', q.type)
-        data.append('score', q.score)
+
+        if(questionType[q.type] === questionType.Rating)
+            data.append('score', 0)
+        else
+            data.append('score', q.score)
         //validate
-        if(!q.text || !q.score){
+        if(!q.text || !q.score && questionType[q.type] !== questionType.Rating){
             setStatus({ error: true, loading: false, success: false, infoMessage: `Question ${qI+1}: Fields Cannot be empty.` })
             return
         }
@@ -520,8 +533,34 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                 "correct": q.choices[0].correct,
             }
             data.append('choices_list', JSON.stringify(cd))
+
+            total_score *= q.score
+
+        }else if(questionType[q.type] === questionType.Rating){
+            let emptyField = false
+            q.choices.forEach((c, i) => {
+                data.append('images', null)
+
+                let cd = {
+                    "text": c.text,
+                    "correct": (i + 1).toString(),
+                }
+                if(!c.text){
+                    emptyField = true
+                }
+                if(c.id)
+                    cd['id'] = c.id
+                data.append('choices_list', JSON.stringify(cd))
+            })
+            if(emptyField){
+                setStatus({ error: true, loading: false, success: false, infoMessage: `Question ${qI+1}: Fields Cannot be empty.` })
+                return
+            }
+
+            total_score = q.choices.length
         }else {
             let hasCorrect = false
+            let emptyField = false
             q.choices.forEach((c, i) => {
                 if(c.image?.name)
                     data.append('images', c.image, i + 1)
@@ -536,8 +575,7 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                     "correct": c.correct,
                 }
                 if(!c.text){
-                    setStatus({ error: true, loading: false, success: false, infoMessage: `Question ${qI+1}: Fields Cannot be empty.` })
-                    return
+                    emptyField = true
                 }
                 if(c.correct === 'true'){
                     hasCorrect = true
@@ -548,13 +586,18 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
                     cd['id'] = c.id
                 data.append('choices_list', JSON.stringify(cd))
             })
+            if(emptyField){
+                setStatus({ error: true, loading: false, success: false, infoMessage: `Question ${qI+1}: Fields Cannot be empty.` })
+                return
+            }
 
             if(!hasCorrect){
                 setStatus({ error: true, loading: false, success: false, infoMessage: `Question ${qI+1}: Please select correct answer.` })
                 return
             }
+
+            total_score *= q.score
         }
-        total_score *= q.score
         data.append('current_score', total_score)
 
         setStatus({ error: false, loading: true, success: false, infoMessage: 'Saving...' })

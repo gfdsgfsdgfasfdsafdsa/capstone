@@ -223,7 +223,7 @@ function Questions({ subjectIndex, question, answers, setAnswers,
                     <Card key={q.id} sx={{ mt: 3 }}>
                         <CardContent>
                             {/*questionUi(subjectIndex ,i, q, answers, setAnswers, question.name, examSubject, setExamSubject)*/}
-                            {questionType[q.type] === questionType.MultipleChoice && (
+                            {(questionType[q.type] === questionType.MultipleChoice || questionType[q.type] === questionType.Rating) && (
                                 <FormControl>
                                     <QuestionText
                                         question={q.text}

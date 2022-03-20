@@ -75,13 +75,16 @@ class QuestionSerializer(serializers.ModelSerializer):
         # Can be deleted in pack
         current_score = validated_data.pop('current_score')
         remove_cnt = 0
-        for k in Choice.objects.filter(question_id=instance.id):
-            if instance.type == 2:
-                remove_cnt += len(k.correct.split(','))
-            else:
-                if k.correct == 'true':
-                    remove_cnt += 1
-        print(remove_cnt)
+        cc = Choice.objects.filter(question_id=instance.id)
+        if instance.type == 3:
+            remove_cnt += cc.count()
+        else:
+            for k in cc:
+                if instance.type == 2:
+                    remove_cnt += len(k.correct.split(','))
+                else:
+                    if k.correct == 'true':
+                        remove_cnt += 1
         subject = Subject.objects.get(pk=instance.subject_id)
         subject.current_score = (subject.current_score + current_score) - remove_cnt
         subject.save()

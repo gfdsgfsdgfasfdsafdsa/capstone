@@ -143,6 +143,10 @@ class SubmitExamApi(APIView):
                                     la = Choice.objects.get(question=q).correct.split(',')
                                     if ans in la:
                                         score += q.score
+                        if q.type == 3:
+                            if d['answer']:
+                                choice = Choice.objects.get(id=d['answer']).correct
+                                score += int(choice)
                 ResultDetails.objects.create(
                     result=result,
                     score=score,

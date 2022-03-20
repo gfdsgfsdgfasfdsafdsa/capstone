@@ -72,7 +72,7 @@ class Question(models.Model):
         (0, 'multipleChoice'),
         (1, 'checkbox'),
         (2, 'fillInTheBlank'),
-        (4, 'trueOrFalse'),
+        (3, 'rating'),
     )
     subject = models.ForeignKey(
         Subject, related_name="subject_questions", on_delete=models.CASCADE)

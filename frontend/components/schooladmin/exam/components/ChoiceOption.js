@@ -18,7 +18,7 @@ import questionType from "../../../../libs/questionType";
 function ChoiceOption(props){
 
     const { text, onChangeAnswer, onChange, type, onChangeImageOption, onClickRemoveOption, onClickRemoveOptionImage, image,
-        questionIndex, choiceIndex, displayCloseButton, correct, qId, cId } = props
+        choiceIndex, displayCloseButton, correct, qId } = props
     //onClick for remove image
 
     return (
@@ -27,19 +27,32 @@ function ChoiceOption(props){
                 container
                 sx={{ display: 'flex', alignItems: 'center', mt: 1 }}
             >
-                <Grid item xs={1}>
-                    {questionType[type] === questionType.MultipleChoice || questionType[type]
-                    === questionType.TrueOrFalse ?
+                {questionType[type] === questionType.MultipleChoice && (
+                    <Grid item xs={1}>
                         <Radio
                             checked={correct === 'true'}
                             onChange={() => onChangeAnswer(qId, choiceIndex)}
                         />
-                        :
+                    </Grid>
+                )}
+                {questionType[type] === questionType.CheckBox && (
+                    <Grid item xs={1}>
                         <Checkbox
                             checked={correct === 'true'}
                             onChange={() => onChangeAnswer(qId, choiceIndex, true)}
-                        />}
-                </Grid>
+                        />
+                    </Grid>
+                )}
+                {questionType[type] === questionType.Rating && (
+                    <Grid item xs={1} textAlign="right">
+                        <Radio disabled={true}/>
+                    </Grid>
+                )}
+                {questionType[type] === questionType.Rating && (
+                    <Grid item xs={1} textAlign="center">
+                        {choiceIndex + 1}
+                    </Grid>
+                )}
                 <Grid item xs={9}>
                     <TextField
                         value={text}
@@ -49,26 +62,26 @@ function ChoiceOption(props){
                         onChange={(e) => onChange(e, qId, choiceIndex)}
                     />
                 </Grid>
-                <Grid item xs={1}>
-                    <input
-                        style={{ display: "none" }}
-                        id={`option-image-${qId}-${choiceIndex}`}
-                        type="file"
-                        accept="image/png, image/jpeg"
-                        onChange={(e) => onChangeImageOption(e, qId, choiceIndex)}
-                        onClick={(e) => {e.target.value = ''}}
-                    />
-                    <label htmlFor={`option-image-${qId}-${choiceIndex}`}>
-                        <IconButton
-                            component="span"
-                        >
-                            <CropOriginalIcon/>
-                        </IconButton>
-                    </label>
-                </Grid>
-                <Grid item xs={1}
-                      sx={{ display: 'flex', justifyContent: 'center' }}
-                >
+                {questionType[type] !== questionType.Rating && (
+                    <Grid item xs={1} textAlign="right">
+                        <input
+                            style={{ display: "none" }}
+                            id={`option-image-${qId}-${choiceIndex}`}
+                            type="file"
+                            accept="image/png, image/jpeg"
+                            onChange={(e) => onChangeImageOption(e, qId, choiceIndex)}
+                            onClick={(e) => {e.target.value = ''}}
+                        />
+                        <label htmlFor={`option-image-${qId}-${choiceIndex}`}>
+                            <IconButton
+                                component="span"
+                            >
+                                <CropOriginalIcon/>
+                            </IconButton>
+                        </label>
+                    </Grid>
+                )}
+                <Grid item xs={1} textAlign="right">
                     {displayCloseButton && (
                         <IconButton
                             onClick={() => onClickRemoveOption(qId, choiceIndex)}

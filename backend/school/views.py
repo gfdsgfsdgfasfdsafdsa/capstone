@@ -161,6 +161,8 @@ class QuestionUpdateDestroy(generics.CreateAPIView,
                     choices = Choice.objects.filter(question=question)
                     if question.type == 2:
                         cnt += len(choices[0].correct.split(','))
+                    elif question.type == 3:
+                        cnt += choices.count()
                     else:
                         for j in choices:
                             if j.correct == 'true':

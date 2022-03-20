@@ -16,7 +16,7 @@ import QuestionText from "../../question_layout/QuestionText";
 import ImageView from "../../question_layout/ImageView";
 
 const defaultDisplay = (q, qI, hideChoices = false) => {
-    if(questionType[q.type] === questionType.MultipleChoice){
+    if(questionType[q.type] === questionType.MultipleChoice || questionType[q.type] === questionType.Rating){
         return (
             <FormControl>
                 <QuestionText
@@ -42,9 +42,11 @@ const defaultDisplay = (q, qI, hideChoices = false) => {
                         })}
                     </RadioGroup>
                 )}
-                <Typography component="div" variant="caption" mt={1}>
-                    Points: {q.score}
-                </Typography>
+                {questionType[q.type] === questionType.MultipleChoice && (
+                    <Typography component="div" variant="caption" mt={1}>
+                        Points: {q.score}
+                    </Typography>
+                )}
             </FormControl>
         )
     }else if(questionType[q.type] === questionType.CheckBox){
@@ -147,7 +149,7 @@ export default function ViewQuestion({ questions, hideChoices }){
             {questions?.map((q, i) => {
                 return(
                     <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }} key={i}>
-                        <Card sx={{ width: '700px' }}>
+                        <Card sx={{ width: '800px' }}>
                             <CardContent>
                                 {defaultDisplay(q, i, hideChoices)}
                             </CardContent>

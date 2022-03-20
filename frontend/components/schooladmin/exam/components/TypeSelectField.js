@@ -29,6 +29,9 @@ const TypeSelectField = (props) => {
                 <MenuItem value={questionType.FillInTheBlank}>
                     Fill in The Blank
                 </MenuItem>
+                <MenuItem value={questionType.Rating}>
+                    Rating
+                </MenuItem>
                 {/*
                 <option value={questionType.MultipleChoice}>
                     Multiple Choice
