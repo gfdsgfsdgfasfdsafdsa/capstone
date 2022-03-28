@@ -9,19 +9,17 @@ import {
   Legend,
 } from 'chart.js';
 import { Box, Button, Card, CardContent, CardHeader, Divider, useTheme } from '@mui/material';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
 );
 
-export const Graph = (props) => {
+export const Graph = ({ currentYear, previousYear }) => {
   const theme = useTheme();
 
   const data = {
@@ -32,7 +30,15 @@ export const Graph = (props) => {
         barThickness: 12,
         borderRadius: 4,
         categoryPercentage: 0.5,
-        data: [18, 5, 19, 27, 29, 19, 20],
+        data: Array.apply(0, Array(12)).map((_n, i) => {
+          try{
+            let c = currentYear.filter(m => m.month === (i+1))[0]
+            if(c.month){
+              return c.c
+            }
+          }catch (_e) {}
+          return 0
+        }),
         label: 'This year',
         maxBarThickness: 10
       },
@@ -42,12 +48,20 @@ export const Graph = (props) => {
         barThickness: 12,
         borderRadius: 4,
         categoryPercentage: 0.5,
-        data: [11, 20, 12],
+        data: Array.apply(0, Array(12)).map((_n, i) => {
+          try{
+            let c = previousYear.filter(m => m.month === (i+1))[0]
+            if(c.month){
+              return c.c
+            }
+          }catch (_e) {}
+          return 0
+        }),
         label: 'Last year',
         maxBarThickness: 10
       }
     ],
-    labels: ['June', 'July', 'Aug']
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   };
 
   const options = {
@@ -100,24 +114,24 @@ export const Graph = (props) => {
   };
 
   return (
-    <Card {...props}>
-      <CardHeader
-        title="No of Students taken the exam this semester"
-      />
-      <Divider />
-      <CardContent>
-        <Box
-          sx={{
-            height: 400,
-            position: 'relative'
-          }}
-        >
-          <Bar
-            data={data}
-            options={options}
-          />
-        </Box>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader
+            title="No of Students taken the exam this semester"
+        />
+        <Divider />
+        <CardContent>
+          <Box
+              sx={{
+                height: 400,
+                position: 'relative'
+              }}
+          >
+            <Bar
+                data={data}
+                options={options}
+            />
+          </Box>
+        </CardContent>
+      </Card>
   );
 };

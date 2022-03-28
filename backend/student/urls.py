@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 from .views import StartExamApi, SubmitExamApi, ResultApi, ResultsApi, SchoolList, \
-    Notification, NotificationDetails, AvailableCourses
+    Notification, NotificationDetails, AvailableCourses, DashboardDetails
 
 urlpatterns = [
     # with put
@@ -13,6 +13,7 @@ urlpatterns = [
     path('notification/', Notification.as_view()),
     path('notification/details/', NotificationDetails.as_view()),
     path('school/courses/<int:pk>/', AvailableCourses.as_view()),
+    path('dashboard/', DashboardDetails.as_view()),
 ]
 
 

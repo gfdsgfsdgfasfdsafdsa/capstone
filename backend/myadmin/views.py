@@ -6,7 +6,7 @@ from rest_framework import filters
 
 from .serializers import SchoolSerializer, School, User, StudentSerializer, Student
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Q
+from django.db.models import Q, Count
 from rest_framework import permissions
 
 class IsAdmin(permissions.BasePermission):
@@ -125,5 +125,14 @@ class StudentAPI(generics.ListAPIView, generics.UpdateAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
+# Dashboard Details
+class DashboardDetails(generics.ListAPIView):
+
+    def list(self, request):
+        data = dict()
+        school = School.objects.annotate(count=Count('school_result')).values('name', 'count').order_by()
+        data['school'] = list(school)
+
+        return Response(data, status=status.HTTP_200_OK)
 
 

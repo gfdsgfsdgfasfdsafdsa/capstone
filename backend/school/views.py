@@ -1,7 +1,9 @@
-from datetime import datetime
+import datetime
+
+from django.db.models.functions import ExtractMonth
 from django.utils import timezone
 
-from django.db.models import Count, Sum, Prefetch
+from django.db.models import Count
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
@@ -461,6 +463,27 @@ class NotificationDetails(generics.ListAPIView, generics.UpdateAPIView):
         return Response(status=status.HTTP_200_OK)
 
 #Notification end
+
+
+# Dashboard
+
+class DashboardDetails(generics.ListAPIView):
+
+    def list(self, request):
+        data = dict()
+        today = datetime.datetime.now()
+        current_year = Result.objects.filter(school__user=request.user, date_taken__year=today.year)\
+            .annotate(month=ExtractMonth('date_taken')) \
+            .values('month').annotate(c=Count('id')).order_by()
+        previous_year = Result.objects.filter(school__user=request.user, date_taken__year=today.year-1) \
+            .annotate(month=ExtractMonth('date_taken'))\
+            .values('month').annotate(c=Count('id')).order_by()
+        data['current_year'] = current_year
+        data['previous_year'] = previous_year
+
+        return Response(data, status=status.HTTP_200_OK)
+
+# Dashboard end
 
 
 

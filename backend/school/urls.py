@@ -1,8 +1,8 @@
 from rest_framework.routers import DefaultRouter
-from django.urls import path, include, re_path
+from django.urls import path, include
 
 from .views import ExamViewSet, QuestionUpdateDestroy, QuestionListCreate, SchoolExamRetrieve, CsvData, \
-    StudentExamResults, StudentExamResult, StudentAppliedList, NotificationDetails, Notification
+    StudentExamResults, StudentExamResult, StudentAppliedList, NotificationDetails, Notification, DashboardDetails
 
 router = DefaultRouter()
 router.register("exam", ExamViewSet)
@@ -18,6 +18,7 @@ urlpatterns = [
     path("csv/<int:page>/", CsvData.as_view()),
     path('notification/', Notification.as_view()),
     path('notification/details/', NotificationDetails.as_view()),
+    path('dashboard/', DashboardDetails.as_view()),
 ]
 
 

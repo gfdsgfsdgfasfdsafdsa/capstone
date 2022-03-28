@@ -21,7 +21,7 @@ ChartJS.register(
   Legend
 );
 
-export const Graph = (props) => {
+export const Graph = ({ school }) => {
   const theme = useTheme();
 
   const data = {
@@ -32,13 +32,16 @@ export const Graph = (props) => {
         barThickness: 12,
         borderRadius: 4,
         categoryPercentage: 0.5,
-        data: [18, 5, 19, 59, 29, 19, 20, 10, 10, 10],
+        data: school?.map((cnt) => {
+          return cnt.count
+        }),
         label: 'No of students',
         maxBarThickness: 10
       },
     ],
-    labels: ['School 1', 'school', 'school',
-      'school', 'school', 'school', 'school', 'school', 'school', 'school']
+    labels: school?.map((name) => {
+      return name.name
+    }),
   };
 
   const options = {
@@ -91,7 +94,7 @@ export const Graph = (props) => {
   };
 
   return (
-    <Card {...props}>
+    <Card>
       <CardHeader
         title="Top Schools with highest no. of Examinees"
       />

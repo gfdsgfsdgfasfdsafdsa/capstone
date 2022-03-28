@@ -19,7 +19,7 @@ ChartJS.register(
   Legend
 );
 
-export const Graph = (props) => {
+export const Graph = ({ school }) => {
   const theme = useTheme();
 
   const data = {
@@ -30,12 +30,16 @@ export const Graph = (props) => {
         barThickness: 12,
         borderRadius: 4,
         categoryPercentage: 0.5,
-        data: [18, 5, 19, 27, 29, 19, 20],
+        data: school?.map((cnt) => {
+          return cnt.count
+        }),
         label: 'School',
         maxBarThickness: 10
       },
     ],
-    labels: ['STI', 'HCDC', 'AMA']
+    labels: school?.map((name) => {
+      return name.name
+    }),
   };
 
   const options = {
@@ -88,7 +92,7 @@ export const Graph = (props) => {
   };
 
   return (
-    <Card {...props}>
+    <Card>
       <CardHeader
         title="No of Students taken the exam in every school"
       />

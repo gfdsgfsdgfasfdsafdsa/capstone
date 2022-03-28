@@ -12,7 +12,7 @@ from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
 import pandas as pd
 import numpy as np
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Prefetch, Count
 
 
 class SchoolList(generics.ListAPIView, generics.UpdateAPIView):
@@ -438,3 +438,15 @@ class AvailableCourses(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
+# Dashboard Details
+class DashboardDetails(generics.ListAPIView):
+
+    def list(self, request):
+        data = dict()
+        school = School.objects.annotate(count=Count('school_result')).values('name', 'count').order_by()
+        data['school'] = list(school)
+
+        result = Result.objects.all()[:3]
+        print(result)
+
+        return Response(data, status=status.HTTP_200_OK)
