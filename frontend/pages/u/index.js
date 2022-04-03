@@ -47,7 +47,9 @@ const Home = ({ data }) => {
                             md={6}
                             xl={3}
                             xs={12}>
-                            <Recommended/>
+                            <Recommended
+                                data={d?.recent_result ? d?.recent_result: []}
+                            />
                         </Grid>
                     </Grid>
                 </Container>

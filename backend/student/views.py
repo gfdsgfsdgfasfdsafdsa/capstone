@@ -446,7 +446,24 @@ class DashboardDetails(generics.ListAPIView):
         school = School.objects.annotate(count=Count('school_result')).values('name', 'count').order_by()
         data['school'] = list(school)
 
-        result = Result.objects.all()[:3]
-        print(result)
+        result = Result.objects.filter(student__user=request.user, submitted=True)[:5]
+        result_list = []
+        for r in result:
+            course_list = []
+            course = CourseRecommended.objects.filter(result=r)[:3]
+            for c in course:
+                d = {
+                    'id': c.id,
+                    'course': c.course,
+                    'rank': c.rank,
+                }
+                course_list.append(d)
+            d = {
+                'id': r.id,
+                'name': r.school.name,
+                'course_list': course_list,
+            }
+            result_list.append(d)
+        data['recent_result'] = result_list
 
         return Response(data, status=status.HTTP_200_OK)

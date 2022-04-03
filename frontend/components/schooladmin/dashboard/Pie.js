@@ -7,23 +7,31 @@ import TabletIcon from '@mui/icons-material/Tablet';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export const Pie = (props) => {
+export const Pie = ({ courseRank }) => {
   const theme = useTheme();
+  let bgColors = [
+      '#3F51B5', '#e53935', '#FB8C00', '#0ff000',
+      '#16dea0', '#5e10de', '#fb0069', '#ffc400',
+      '#fb1500', '#f800ff', "#00ffc1", "#ad4b47",
+      '#7e5757', '#8937c4', '#063041', '#094b03',
+      '#3a3030', '#011000', "#0e2a65", "#4b48a9",
+  ]
 
   const data = {
     datasets: [
       {
-        data: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-        backgroundColor: ['#3F51B5', '#e53935', '#FB8C00', '#0ff000',
-            '#16dea0', '#5e10de', '#fb0069', '#ffc400',
-          '#fb1500', '#f800ff',
-        ],
+        data: courseRank?.map((name) => {
+          return name.c
+        }),
+        backgroundColor: bgColors,
         borderWidth: 8,
         borderColor: '#FFFFFF',
         hoverBorderColor: '#FFFFFF'
       }
     ],
-    labels: ['BSIT', 'BSCE', 'BSCS', 'BSMT', 'BSBE', "BSBA", 'BSA', 'BEED', 'HRM', 'BSCRIM']
+    labels: courseRank?.map((name) => {
+      return name.course
+    }),
   };
 
   const options = {
@@ -48,57 +56,18 @@ export const Pie = (props) => {
     }
   };
 
-  const devices = [
-    {
-      title: 'BSIT',
-      value: 10,
-      color: '#3F51B5'
-    },
-    {
-      title: 'BSCE',
-      value: 10,
-      color: '#E53935'
-    },
-  {
-    title: 'BSMT',
-        value: 10,
-      color: '#FB8C00'
-  },
-  {
-    title: 'BSBE',
-        value: 10,
-      color: '#0ff000'
-  },
-  {
-    title: 'BSBA',
-        value: 10,
-      color: '#16dea0'
-  },
-  {
-    title: 'BSA',
-        value: 10,
-      color: '#5e10de'
-  },
-  {
-    title: 'BEED',
-        value: 10,
-      color: '#fb0069'
-  },
-  {
-    title: 'HRM',
-        value: 10,
-      color: '#fb1500'
-  },
-  {
-    title: 'BSCRIM',
-        value: 10,
-      color: '#f800ff'
-  },
-
+  let i = -1
+  const courseList = [
+      ...courseRank?.map((x) => {
+          i++;
+          if(i >= bgColors.length)
+              i = 0
+          return { title: x.course, value: x.c, color: bgColors[i]}
+      }),
   ];
   return (
-      <Card {...props}>
-        <CardHeader title="Top 10 Recommended Courses" />
+      <Card>
+        <CardHeader title="Most Recommended Courses" />
         <Divider />
         <CardContent>
           <Box
@@ -107,6 +76,11 @@ export const Pie = (props) => {
                 position: 'relative'
               }}
           >
+              {courseList?.length === 0 && (
+                  <Typography textAlign="center">
+                      No data
+                  </Typography>
+              )}
             <Doughnut
                 data={data}
                 options={options}
@@ -120,7 +94,7 @@ export const Pie = (props) => {
                 pt: 2
               }}
           >
-            {devices.map(({
+            {courseList.map(({
                             color,
                             title,
                             value

@@ -12,6 +12,7 @@ const Home = ({ data }) => {
         fallbackData: data,
         revalidateOnFocus: false,
     });
+    console.log(d)
 
     return (
         <>
@@ -48,7 +49,10 @@ const Home = ({ data }) => {
                             md={6}
                             xl={3}
                             xs={12}>
-                            <Pie sx={{ height: '100%' }} />
+                            <Pie
+                                courseRank={d?.course_rank ? d?.course_rank : []}
+                                sx={{ height: '100%' }}
+                            />
                         </Grid>
                     </Grid>
                 </Container>

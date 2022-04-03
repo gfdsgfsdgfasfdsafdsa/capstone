@@ -16,7 +16,7 @@ from rest_framework import filters
 
 from .serializers import ExamSerializer, Exam, Subject, Question, QuestionSerializer, School, SchoolSerializer, Result, \
     ResultSerializer, ResultSingleSerializer, StudentSerializer, StudentApplied, Student, AppliedStudentSerializer, \
-    NotificationSerializer, Choice
+    NotificationSerializer, Choice, CourseRecommended
 from rest_framework.permissions import IsAuthenticated
 import pandas as pd
 
@@ -480,6 +480,11 @@ class DashboardDetails(generics.ListAPIView):
             .values('month').annotate(c=Count('id')).order_by()
         data['current_year'] = current_year
         data['previous_year'] = previous_year
+
+
+        result = Result.objects.filter(school__user=request.user, submitted=True)
+        course = CourseRecommended.objects.filter(result__in=result).values('course').annotate(c=Count('course')).order_by()
+        data['course_rank'] = list(course)
 
         return Response(data, status=status.HTTP_200_OK)
 
