@@ -7,7 +7,7 @@ import {
     CardContent,
     Table, TableHead, TableRow, TableCell, TableBody, TableContainer, AccordionDetails, AccordionSummary, Accordion
 } from "@mui/material";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+//import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {useState} from "react";
 import Image from 'next/image'
 
@@ -106,6 +106,13 @@ export default function Single({ result }){
                                 Same no. in ranking has no particular order
                             </Typography>
                         </Box>
+                        {result?.course_recommended.length === 0 && (
+                            <Box sx={{ pl: 5, mt: 2 }}>
+                                <Typography variant="body2" mb={2}>
+                                    Unable to get result due to your score.
+                                </Typography>
+                            </Box>
+                        )}
                         {result?.course_recommended.map((d) => (
                             <Box key={d.id} sx={{ pl: 5 }}>
                                 <Typography variant="cool" mb={2}>

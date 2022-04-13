@@ -214,7 +214,7 @@ class SubmitExamApi(APIView):
             predicted = round(predicted)
 
             values = pd.DataFrame(data, columns=['Course', 'Overall']).query("Overall <= " + str(predicted))
-
+            '''
             last_rank = 1
             last_overall = -1
             for j in range(10):
@@ -236,13 +236,40 @@ class SubmitExamApi(APIView):
                     last_overall = int(row['Overall'])
                     values = values.drop(values[values['Course'] == row['Course']].index)
                     break
+            '''
+            recommendation_count = 0
+            last_recommended_value = 0
+            rank = 0
+
+            while True:
+                last_overall = 0
+                course = ""
+                for index, row in values.iterrows():
+
+                    last_overall = int(row['Overall'])
+                    values = values.drop(values[values['Course'] == row['Course']].index)
+                    recommendation_count += 1
+                    course = row['Course']
+                    break
+
+                if last_overall != last_recommended_value and recommendation_count >= 10 or course == "":
+                    break
+                else:
+                    if last_overall != last_recommended_value:
+                        rank += 1
+                CourseRecommended.objects.create(
+                    result=result,
+                    course=course,
+                    rank=rank,
+                )
+                last_recommended_value = last_overall
             result.regression_model = regression_model
             result.formula = formula
             result.save()
         except (Exception,):
             pass
 
-
+        '''
         if exam_info['Course'] != '':
             df = pd.DataFrame(exam_info)
             df.to_csv(ex.csv_file.path, mode='a', index=False, header=False)
@@ -263,6 +290,7 @@ class SubmitExamApi(APIView):
             result.save()
             df = pd.DataFrame(exam_info)
             df.to_csv(ex.csv_file.path, mode='a', index=False, header=False)
+        '''
         '''
         csv_file = Exam.objects.get(school=school).csv_file
         data = pd.read_csv(csv_file)
