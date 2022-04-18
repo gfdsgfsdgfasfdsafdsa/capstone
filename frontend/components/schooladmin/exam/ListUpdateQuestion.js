@@ -29,6 +29,7 @@ import PointsTextField from './components/PointsTextField'
 import QuestionTextField from './components/QuestionTextField'
 import ImagePreview from './components/ImagePreview'
 import ChoiceOption from "./components/ChoiceOption";
+import rawHTML from "../../../libs/rawHTML";
 
 
 const NewChoice = memo(function NewChoice(props) {
@@ -268,7 +269,7 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
             return (
                 <FormControl>
                     <QuestionText
-                        question={q.text}
+                        question={rawHTML((q.text))}
                         no={qI+1}
                         image={q.imagePreview ? q.imagePreview : q.image}
                     />
@@ -287,7 +288,7 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
                                             value={c.id}
                                             control={<Radio size="small"/>}
                                             checked={c.correct === 'true'}
-                                            label={c.text}
+                                            label={rawHTML((c.text))}
                                         />
                                         <ImageView image={c.imagePreview ? c.imagePreview : c.image}/>
                                     </Box>
@@ -307,7 +308,7 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
             return (
                 <FormGroup>
                     <QuestionText
-                        question={q.text}
+                        question={rawHTML((q.text))}
                         no={qI+1}
                         image={q.imagePreview ? q.imagePreview : q.image}
                     />
@@ -321,7 +322,7 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
                                         sx={{ ml: 2}}
                                         control={<Checkbox size="small"/>}
                                         checked={c.correct === 'true'}
-                                        label={c.text}
+                                        label={rawHTML((c.text))}
                                     />
                                     <ImageView image={c.imagePreview ? c.imagePreview : c.image}/>
                                 </Box>
@@ -370,12 +371,12 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
                                                 disabled={true}
                                             />
                                             <Typography component="span" sx={{ lineHeight: "47px" }}>
-                                                {text}
+                                                {rawHTML((text))}
                                             </Typography>
                                         </>
                                     ) : (
                                         <Typography component="span" sx={{ lineHeight: "40px" }}>
-                                            {text}
+                                            {rawHTML((text))}
                                         </Typography>
                                     )}
                                 </Typography>

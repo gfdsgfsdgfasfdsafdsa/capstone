@@ -1,5 +1,6 @@
 import {memo} from "react";
 import {Checkbox, FormControlLabel, Radio} from "@mui/material";
+import rawHTML from "../../libs/rawHTML";
 
 function CheckboxChoices(props){
 
@@ -15,7 +16,7 @@ function CheckboxChoices(props){
                     disabled={disable}
                     onClick={(e) => onClick(e, questionIndex, choiceIndex, id, choiceId)}
                 />}
-                label={question}
+                label={rawHTML((question))}
             />
         </>
     )

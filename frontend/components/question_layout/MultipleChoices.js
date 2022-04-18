@@ -1,5 +1,6 @@
 import {memo} from "react";
 import {FormControlLabel, Radio} from "@mui/material";
+import rawHTML from "../../libs/rawHTML";
 
 function MultipleChoices(props){
 
@@ -12,7 +13,7 @@ function MultipleChoices(props){
                 control={<Radio size="small"/>}
                 checked={answer}
                 onClick={() => onClick(questionIndex, choiceIndex, questionId, choiceId)}
-                label={text}/>
+                label={rawHTML(text)}/>
         </>
     )
 }

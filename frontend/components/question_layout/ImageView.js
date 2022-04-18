@@ -13,7 +13,7 @@ function ImageView({ image }){
                              px: 5,
                              height: 'auto',
                              maxWidth: '700px',
-                             width: '100%'
+                             //width: '100%'
                          }}
                     />
                 </Box>

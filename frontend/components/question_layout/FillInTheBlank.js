@@ -1,6 +1,7 @@
 import {Box, TextField, Typography} from "@mui/material";
 import QuestionText from "./QuestionText";
 import React, {memo} from "react";
+import rawHTML from "../../libs/rawHTML";
 
 function FillInTheBlank({ question, onChange, questionIndex, image, choice, id }){
     return (
@@ -41,12 +42,12 @@ function FillInTheBlank({ question, onChange, questionIndex, image, choice, id }
                                         onChange={(e) => onChange(e, questionIndex, i-1, id)}
                                         autoComplete="off"/>
                                     <Typography component="span" sx={{ lineHeight: "50px" }}>
-                                        {text}
+                                        {rawHTML(text)}
                                     </Typography>
                                 </>
                             ) : (
                                 <Typography component="span" sx={{ lineHeight: "40px" }}>
-                                    {text}
+                                    {rawHTML(text)}
                                 </Typography>
                             ))}
                         </Typography>

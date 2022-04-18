@@ -11,12 +11,12 @@ import useSWR, {useSWRConfig} from "swr";
 export default function School({ schoolsList }){
     const [pageIndex, setPageIndex] = useState(1);
     const [searchText, setSearchText] = useState('')
-    const { data: schools, isValidating } = useSWR(`myadmin/schools/?page=${pageIndex}&search=${searchText}`, {
+    const { data: schools, isValidating, mutate } = useSWR(`myadmin/schools/?page=${pageIndex}&search=${searchText}`, {
         fallbackData: schoolsList,
         revalidateOnFocus: false,
     });
 
-    const { mutate } = useSWRConfig()
+    // const { mutate } = useSWRConfig()
 
 
     const onKeyUpSearch = (e) => {
@@ -52,6 +52,7 @@ export default function School({ schoolsList }){
                     />
                     <Box sx={{ mt: 1 }}>
                         <SchoolList
+                            isValidating={isValidating}
                             mutate={mutate}
                             pageIndex={pageIndex}
                             setPageIndex={setPageIndex}

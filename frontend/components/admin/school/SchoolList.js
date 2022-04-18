@@ -10,7 +10,7 @@ import {
     Paper,
     Link as MuiLink,
     Pagination,
-    Avatar, Button,
+    Avatar, Button, CircularProgress,
 } from '@mui/material';
 import CustomDialog from "../../CustomDialog";
 import {
@@ -23,26 +23,32 @@ import { useState} from 'react'
 import {PAGINATION_COUNT, paginationRecordCount} from "../../../config/settings";
 
 
-export default function SchoolList({ pageIndex, setPageIndex, schools, mutate }){
+export default function SchoolList({ pageIndex, setPageIndex, schools, mutate, isValidating }){
 
     const [openDialog, setOpenDialog] = useState(false)
 
     const [ todelete , setTodelete] = useState({
         id: '',
         schoolname: '',
+        loading: false,
+        message: '',
     })
 
 
-    const onClickConfirm = () => {
-        axiosInstance.delete(`myadmin/schools/${todelete.id}/`).then((_r) => {
-            mutate(`myadmin/schools/${todelete.id}/`)
-        })
+    async function onClickConfirm(){
         setOpenDialog(false)
+        setTodelete({ ...todelete, loading: true, message: 'Deleting..' })
+        await axiosInstance.delete(`myadmin/schools/${todelete.id}/`).then((_r) => {
+            mutate()
+            setTodelete({ id: '', schoolname: '', loading: false, message: 'Successfully Deleted.' })
+        }).catch((_e) => {
+            setTodelete({ id: '', schoolname: '', loading: false, message: 'Something went wrong failed to delete.' })
+        })
     }
 
 
     const onClickPreview = (id, name) =>  {
-        setTodelete({ id: id, schoolname: name})
+        setTodelete({ id: id, schoolname: name, loading: false, message: '' })
         setOpenDialog(true)
     }
 
@@ -56,16 +62,31 @@ export default function SchoolList({ pageIndex, setPageIndex, schools, mutate })
                     openDialog={openDialog}
                     setOpenDialog={setOpenDialog}
                     onClickPreview={onClickPreview}
-                    title={'DELETE!?'}
+                    title={'Are you sure you want to delete?'}
                     content={`Click confirm to delete ${todelete.schoolname}`}
                 />
                 <Box
                     sx={{
                         display: 'flex',
-                        justifyContent: 'end',
+                        justifyContent: 'space-between',
                         py: 2,
                         mr: 2,
+                        ml: 2,
                     }}>
+                    {todelete.message ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {todelete.loading && (
+                                <CircularProgress size={20} sx={{ mr: 1 }}/>
+                            )}
+                            {todelete.message}
+                        </Box>
+                    ): (
+                        isValidating ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <CircularProgress size={20} sx={{ mr: 1 }}/>Loading..
+                            </Box>
+                        ): ( <div/>)
+                    )}
                     <Link href={`/a/school/create`} passHref>
                         <MuiLink sx={{
                             color: 'white',

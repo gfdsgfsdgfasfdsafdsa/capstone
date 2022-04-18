@@ -1,5 +1,6 @@
 import {Box, Typography} from "@mui/material";
 import {memo} from "react";
+import rawHTML from "../../libs/rawHTML";
 
 function QuestionText({ question, no, image }){
 
@@ -10,7 +11,7 @@ function QuestionText({ question, no, image }){
                     {no}.
                 </Typography>
                 <Typography variant="body1" className="new-line">
-                    {question}
+                    {rawHTML(question)}
                 </Typography>
             </Box>
             <Box mb={1}>
@@ -23,7 +24,7 @@ function QuestionText({ question, no, image }){
                              mt: 2,
                              height: 'auto',
                              maxWidth: '700px',
-                             width: '100%'
+                             //width: '100%'
                          }}
                     />
                 )}
