@@ -214,10 +214,7 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                 data.append('images', null)
 
             data.append('type', questionType[type])
-            if(questionType.Rating)
-                data.append('score', 0)
-            else
-                data.append('score', score)
+            data.append('score', score)
             if(type === questionType.FillInTheBlank){
                 //validate
                 let blanksLength = question.text.split('_').length - 1
@@ -297,6 +294,10 @@ const NewQuestionUI = ({ mutate, routerId, setStatus, subjectQuestions }) => {
                 total_score *= score
             }
             data.append('current_score', total_score)
+            if(total_score === 0){
+                setStatus({ error: true, loading:false, success: false, infoMessage: 'Error: Invalid Points.' })
+                return
+            }
 
             if(!manualReset)
                 reset()

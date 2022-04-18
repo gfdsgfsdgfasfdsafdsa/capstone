@@ -599,6 +599,10 @@ function ListUpdateQuestion({ subjectQuestions, setStatus, checked, setChecked, 
             total_score *= q.score
         }
         data.append('current_score', total_score)
+        if(total_score === 0){
+            setStatus({ error: true, loading:false, success: false, infoMessage: `Question ${qI+1}: Invalid Points.` })
+            return
+        }
 
         setStatus({ error: false, loading: true, success: false, infoMessage: 'Saving...' })
         setQuestions(prev =>

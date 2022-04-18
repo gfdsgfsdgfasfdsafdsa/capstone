@@ -162,13 +162,14 @@ class QuestionUpdateDestroy(generics.CreateAPIView,
                     subject_id = question.subject_id
                     choices = Choice.objects.filter(question=question)
                     if question.type == 2:
-                        cnt += len(choices[0].correct.split(','))
+                        cnt += len(choices[0].correct.split(','))*question.score
                     elif question.type == 3:
-                        cnt += choices.count()
+                        pass
+                        # cnt += choices.count()
                     else:
                         for j in choices:
                             if j.correct == 'true':
-                                cnt += 1
+                                cnt += question.score
                     question.delete()
                 if subject_id != -1:
                     subject = Subject.objects.get(pk=subject_id)
@@ -278,7 +279,7 @@ class CsvData(APIView):
 
         data={}
         csv_file = Exam.objects.get(school__user_id=request.user.id).csv_file
-        csv = pd.read_csv(csv_file)
+        csv = pd.read_csv(csv_file, na_filter=False)
         total = csv[csv.columns[0]].count()
 
         page_count = 15

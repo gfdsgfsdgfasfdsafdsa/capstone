@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
 import cloudinary
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,13 +28,13 @@ cloudinary.config(cloud_name='dt8yfjfwn',
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = 'coursemeproject@gmail.com'
-EMAIL_HOST_PASSWORD = 'courseme12345'
+EMAIL_HOST_PASSWORD = 'courseme1234567890'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-FRONT_END_URL = 'http://localhost:2222'
-#FRONT_END_URL = 'https://courseme.vercel.app'
+#FRONT_END_URL = 'http://localhost:2222'
+FRONT_END_URL = 'https://courseme.vercel.app'
 #  -------------- Main Config ----------
 
 
@@ -49,7 +50,7 @@ INSTALLED_APPS = [
     # installed
     'rest_framework',
     'rest_framework_simplejwt',
-    "debug_toolbar",
+    #"debug_toolbar",
     "corsheaders",
     'django_filters',
     # apps
@@ -67,11 +68,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    #"debug_toolbar.middleware.DebugToolbarMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 
-    #'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 INTERNAL_IPS = [
@@ -146,7 +147,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'app/static')
+]
 MEDIA_URL = "/media/"
 
 # Default primary key field type
