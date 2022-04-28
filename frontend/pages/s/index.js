@@ -12,7 +12,6 @@ const Home = ({ data }) => {
         fallbackData: data,
         revalidateOnFocus: false,
     });
-    console.log(d)
 
     return (
         <>

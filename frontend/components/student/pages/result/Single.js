@@ -10,6 +10,7 @@ import {
 //import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {useState} from "react";
 import Image from 'next/image'
+import Survey from "../../result/Survey";
 
 export default function Single({ result }){
     const [expanded, setExpanded] = useState();
@@ -93,6 +94,7 @@ export default function Single({ result }){
                         </TableContainer>
                     </CardContent>
                 </Card>
+                <Survey/>
                 <Box mt={3} pb={10} ml={3}>
                     <>
                         <Box>

@@ -121,6 +121,9 @@ class SubmitExamApi(APIView):
         if ResultDetails.objects.filter(result=result).count() or result.submitted:
             return Response(status=status.HTTP_200_OK)
 
+        result.submitted = True
+        result.save()
+
         subjects = Subject.objects.filter(exam__school=school)
         rd = request.data
         for subject in subjects:
@@ -152,7 +155,7 @@ class SubmitExamApi(APIView):
                     score=score,
                     subject=subject,
                 )
-        result.submitted = True
+        # result.submitted = True
         result.save()
 
 

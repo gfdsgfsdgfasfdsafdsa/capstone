@@ -484,7 +484,7 @@ class DashboardDetails(generics.ListAPIView):
 
 
         result = Result.objects.filter(school__user=request.user, submitted=True)
-        course = CourseRecommended.objects.filter(result__in=result).values('course').annotate(c=Count('course')).order_by()
+        course = CourseRecommended.objects.filter(result__in=result).values('course').annotate(c=Count('course')).order_by('-c')
         data['course_rank'] = list(course)
 
         return Response(data, status=status.HTTP_200_OK)

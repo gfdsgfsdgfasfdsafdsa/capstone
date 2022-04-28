@@ -16,6 +16,9 @@ class Result(models.Model):
         verbose_name = 'Exam Result'
         ordering = ['-id']
 
+    def __str__(self):
+        return '{} - {}'.format(self.student.user.name, self.school.name)
+
 class ResultDetails(models.Model):
     result = models.ForeignKey(
         Result, related_name="result_details", on_delete=models.CASCADE)
@@ -24,6 +27,9 @@ class ResultDetails(models.Model):
 
     class Meta:
         verbose_name = 'Result Detail'
+
+    def __str__(self):
+        return '{} - {}'.format(self.result.student.user.name, self.subject)
 
 
 class CourseRecommended(models.Model):
@@ -35,5 +41,8 @@ class CourseRecommended(models.Model):
     class Meta:
         verbose_name = 'Course Recommend'
         ordering = ['id']
+
+    def __str__(self):
+        return '{} - {}'.format(self.result.student.user.name, self.result.school.name)
 
 

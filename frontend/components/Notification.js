@@ -25,7 +25,9 @@ import AxiosInstance from "../utils/axiosInstance";
 const Notification = ({ isStudent }) => {
     const notifQuery = isStudent ? 'student/notification/' : 'school/notification/'
 
-    const { data: notif, mutate: notifMutate } = useSWR(notifQuery);
+    const { data: notif, mutate: notifMutate } = useSWR(notifQuery, {
+        refreshInterval: 3000,
+    });
     const [loadingReadAll, setLoadingReadAll] = useState(false)
 
     const getKey = (pageIndex, previousPageData) => {
@@ -293,11 +295,25 @@ const Notification = ({ isStudent }) => {
                     <IconButton
                         onClick={markAllRead}
                     >
-                        <Tooltip title="Mark all as read">
+                        {/*
+                        <Tooltip title="">
                             <MarkunreadIcon
                                 sx={{ color: '#fff' }}
                             />
                         </Tooltip>
+                        */}
+                        <Typography
+                            variant="caption"
+                            color="white"
+                            sx={{
+                                textDecoration: "underline",
+                                ":hover": {
+                                    color: '#dedede'
+                                }
+                            }}
+                        >
+                            Mark all as read
+                        </Typography>
                     </IconButton>
                 </Box>
                 {notifD?.length === 0 && (

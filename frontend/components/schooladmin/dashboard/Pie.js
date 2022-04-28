@@ -24,7 +24,7 @@ export const Pie = ({ courseRank }) => {
           return name.c
         }),
         backgroundColor: bgColors,
-        borderWidth: 8,
+        borderWidth: 1,
         borderColor: '#FFFFFF',
         hoverBorderColor: '#FFFFFF'
       }
@@ -85,12 +85,20 @@ export const Pie = ({ courseRank }) => {
                 options={options}
             />
           </Box>
+            <Typography
+                variant="subtitle1"
+                sx={{
+                    ml: 2,
+                    mt: 1,
+                }}
+            >
+                Recommended count:
+            </Typography>
           <Box
               sx={{
                 display: 'flex',
                 justifyContent: 'center',
                 flexWrap: 'wrap',
-                pt: 2
               }}
           >
             {courseList.map(({
@@ -105,19 +113,18 @@ export const Pie = ({ courseRank }) => {
                       textAlign: 'center'
                     }}
                 >
-                  <Typography
-                      color="textPrimary"
-                      variant="caption"
-                  >
-                    {title} &nbsp;
-                  </Typography>
-                  <Typography
-                      style={{ color }}
-                      variant="subtitle3"
-                  >
-                    {value}
-                    %
-                  </Typography>
+                    <Typography
+                        color="textPrimary"
+                        variant="caption"
+                    >
+                        {title} &nbsp;
+                    </Typography>
+                    <Typography
+                        style={{ color }}
+                        variant="subtitle3"
+                    >
+                        {value}
+                    </Typography>
                 </Box>
             ))}
           </Box>
