@@ -222,7 +222,7 @@ export default function SchoolId(){
                                 <AccountProfileDetails
                                     id={id}
                                     school={data}
-                                    setSchool={setSchool}
+                                    //setSchool={setSchool}
                                     mutate={mutate}
                                     setStatus={setStatus}
                                 />

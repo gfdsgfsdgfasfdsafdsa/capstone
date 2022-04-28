@@ -269,7 +269,7 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
             return (
                 <FormControl>
                     <QuestionText
-                        question={rawHTML((q.text))}
+                        question={q.text}
                         no={qI+1}
                         image={q.imagePreview ? q.imagePreview : q.image}
                     />
@@ -308,7 +308,7 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
             return (
                 <FormGroup>
                     <QuestionText
-                        question={rawHTML((q.text))}
+                        question={q.text}
                         no={qI+1}
                         image={q.imagePreview ? q.imagePreview : q.image}
                     />
@@ -371,12 +371,12 @@ const DefaultDisplay = memo(function DefaultDisplay(props) {
                                                 disabled={true}
                                             />
                                             <Typography component="span" sx={{ lineHeight: "47px" }}>
-                                                {rawHTML((text))}
+                                                {rawHTML(text)}
                                             </Typography>
                                         </>
                                     ) : (
                                         <Typography component="span" sx={{ lineHeight: "40px" }}>
-                                            {rawHTML((text))}
+                                            {rawHTML(text)}
                                         </Typography>
                                     )}
                                 </Typography>

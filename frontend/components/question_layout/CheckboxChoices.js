@@ -16,7 +16,7 @@ function CheckboxChoices(props){
                     disabled={disable}
                     onClick={(e) => onClick(e, questionIndex, choiceIndex, id, choiceId)}
                 />}
-                label={rawHTML((question))}
+                label={rawHTML(question)}
             />
         </>
     )

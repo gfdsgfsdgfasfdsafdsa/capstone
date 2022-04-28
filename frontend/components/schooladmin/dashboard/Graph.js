@@ -65,12 +65,16 @@ export const Graph = ({ currentYear, previousYear }) => {
   };
 
   const options = {
-    animation: false,
     cornerRadius: 20,
     layout: { padding: 0 },
     legend: { display: false },
     maintainAspectRatio: false,
     responsive: true,
+    scale: {
+      ticks: {
+        precision: 0
+      }
+    },
     xAxes: [
       {
         ticks: {

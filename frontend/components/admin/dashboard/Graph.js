@@ -43,21 +43,25 @@ export const Graph = ({ school }) => {
   };
 
   const options = {
-    animation: false,
     cornerRadius: 20,
     layout: { padding: 0 },
     legend: { display: false },
     maintainAspectRatio: false,
     responsive: true,
+    scale: {
+      ticks: {
+        precision: 0
+      }
+    },
     xAxes: [
       {
         ticks: {
-          fontColor: theme.palette.text.secondary
+          fontColor: theme.palette.text.secondary,
         },
         gridLines: {
           display: false,
           drawBorder: false
-        }
+        },
       }
     ],
     yAxes: [
@@ -65,7 +69,6 @@ export const Graph = ({ school }) => {
         ticks: {
           fontColor: theme.palette.text.secondary,
           beginAtZero: true,
-          min: 0
         },
         gridLines: {
           borderDash: [2],
@@ -75,7 +78,7 @@ export const Graph = ({ school }) => {
           zeroLineBorderDash: [2],
           zeroLineBorderDashOffset: [2],
           zeroLineColor: theme.palette.divider
-        }
+        },
       }
     ],
     tooltips: {

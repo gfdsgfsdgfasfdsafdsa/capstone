@@ -14,6 +14,7 @@ import {
 import questionType from '../../../libs/questionType'
 import QuestionText from "../../question_layout/QuestionText";
 import ImageView from "../../question_layout/ImageView";
+import rawHTML from "../../../libs/rawHTML";
 
 const defaultDisplay = (q, qI, hideChoices = false) => {
     if(questionType[q.type] === questionType.MultipleChoice || questionType[q.type] === questionType.Rating){
@@ -35,7 +36,7 @@ const defaultDisplay = (q, qI, hideChoices = false) => {
                                         value={c.id}
                                         control={<Radio size="small"/>}
                                         checked={c.correct === 'true'}
-                                        label={c.text}/>
+                                        label={rawHTML(c.text)}/>
                                     <ImageView image={c.imagePreview ? c.imagePreview : c.image}/>
                                 </Box>
                             )
@@ -68,7 +69,7 @@ const defaultDisplay = (q, qI, hideChoices = false) => {
                                     sx={{ ml: 2}}
                                     control={<Checkbox size="small"/>}
                                     checked={c.correct === 'true'}
-                                    label={c.text}
+                                    label={rawHTML(c.text)}
                                 />
                                 <ImageView image={c.imagePreview ? c.imagePreview : c.image}/>
                             </Box>
@@ -118,12 +119,12 @@ const defaultDisplay = (q, qI, hideChoices = false) => {
                                                 disabled={true}
                                             />
                                             <Typography component="span" sx={{ lineHeight: "50px" }}>
-                                                {text}
+                                                {rawHTML(text)}
                                             </Typography>
                                         </>
                                     ) : (
                                         <Typography component="span" sx={{ lineHeight: "40px" }}>
-                                            {text}
+                                            {rawHTML(text)}
                                         </Typography>
                                     )}
                                 </Typography>

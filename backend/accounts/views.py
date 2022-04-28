@@ -102,12 +102,24 @@ class StudentRegistration(APIView):
                 break
             else:
                 activation_token = secrets.token_urlsafe()
+        '''
+        message = '{}\n{}'.format('Click the click to activate your account',
+                                  settings.FRONT_END_URL+'/activate-account?token='+activation_token)
+        send_mail(
+            'Account Activation',
+            message,
+            settings.EMAIL_HOST_USER,
+            [data['email']],
+            fail_silently=False,
+        )
+        '''
 
         user = User.objects.create(
             email=data['email'],
             name=data['name'],
             type=2,
-            activated=activation_token,
+            activated=1,
+            #activated=activation_token,
         )
         user.set_password(request.data['password'])
         user.save()
@@ -118,16 +130,6 @@ class StudentRegistration(APIView):
             age=data['age'],
             strand=data['strand'],
             birth_date=data['birth_date']
-        )
-        message = '{}\n{}'.format('Click the click to activate your account',
-                                 settings.FRONT_END_URL+'/activate-account?token='+activation_token)
-
-        send_mail(
-            'Account Activation',
-            message,
-            settings.EMAIL_HOST_USER,
-            [data['email']],
-            fail_silently=False,
         )
 
         return Response({ 'registered': '1' }, status=status.HTTP_200_OK)

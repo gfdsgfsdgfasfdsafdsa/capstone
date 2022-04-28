@@ -25,7 +25,7 @@ import { STATUS } from "../../../config/settings";
 import {useRouter} from "next/router";
 import axiosInstance from "../../../utils/axiosInstance";
 
-export const AccountProfileDetails = ({ school, setSchool, mutate, setStatus, id }) => {
+export const AccountProfileDetails = ({ school, mutate, setStatus, id }) => {
 
     const { register, watch, handleSubmit, setValue, clearErrors, formState: { errors }, } = useForm({
         mode: 'onTouched'
@@ -72,11 +72,12 @@ export const AccountProfileDetails = ({ school, setSchool, mutate, setStatus, id
                 })
             }else{
                 mutate(`myadmin/schools/${id}`, {
+                    ...data,
                     name: data.name,
                     email: data.email,
                     description: data.description,
                 }, false)
-                setSchool({ ...school, name: data.name, description: data.description })
+                //setSchool({ ...school, name: data.name, description: data.description })
                 setStatus({
                     error: false,
                     success: true,

@@ -210,6 +210,7 @@ const Single = ({ school, router, id, mutate }) => {
                                     examSubject={examSubject}
                                     setAnswers={setAnswers}
                                     setTabFunc={setTabFunc}
+                                    setSubjectName={setSubjectName}
                                 />
                             </TabPanel>
                         ))}
