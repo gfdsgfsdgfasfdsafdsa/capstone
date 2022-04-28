@@ -18,7 +18,11 @@ const ExamId = () => {
 
     if(exam?.submitted){
         router.push(`/u/results/${id}`)
-        return <Loading/>
+        return (
+            <DashboardLayout title="Examination">
+                <Loading/>
+            </DashboardLayout>
+        )
     }
 
     return (

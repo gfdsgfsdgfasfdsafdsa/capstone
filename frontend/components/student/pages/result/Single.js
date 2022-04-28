@@ -17,7 +17,6 @@ export default function Single({ result }){
     const handleChange = (panel) => (event, newExpanded) => {
         setExpanded(newExpanded ? panel : false);
     };
-    console.log(result)
 
     return (
         <>
