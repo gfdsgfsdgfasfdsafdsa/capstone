@@ -117,8 +117,8 @@ class StudentRegistration(APIView):
             email=data['email'],
             name=data['name'],
             type=2,
-            activated=1,
-            #activated=activation_token,
+            #activated=1,
+            activated=activation_token,
         )
         user.set_password(request.data['password'])
         user.save()
