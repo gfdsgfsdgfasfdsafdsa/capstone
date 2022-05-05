@@ -3,7 +3,7 @@ const Papa = require('papaparse');
 import AxiosInstance from '../../../utils/axiosInstance'
 import  { useSWRConfig } from 'swr'
 import {CustomDialog, Alert} from "../../Index";
-import {useSnackbar} from "notistack";
+//import {useSnackbar} from "notistack";
 import {
     Box,
     Button,
@@ -52,7 +52,7 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
 
     const { mutate } = useSWRConfig()
 
-    const { enqueueSnackbar } = useSnackbar();
+    //const { enqueueSnackbar } = useSnackbar();
 
     const resetStates = () => {
         setFile(fileInit)
