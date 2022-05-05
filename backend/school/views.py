@@ -263,8 +263,28 @@ class StudentExamResults(generics.ListAPIView,
     def retrieve(request, *args, **kwargs):
         return Response({ 'test': 'fds'})
 # get
-class StudentExamResult(generics.RetrieveAPIView):
+class StudentExamResult(generics.RetrieveAPIView, generics.DestroyAPIView):
     serializer_class = ResultSingleSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        error = 0
+        if 'student_id' in request.data:
+            student_id = request.data['student_id']
+            try:
+                result = Result.objects.get(school__user=self.request.user, student_id=student_id)
+                result.delete()
+            except Result.DoesNotExist:
+                error += 1
+            try:
+                student_applied = StudentApplied.objects.get(school__user=self.request.user, student_id=student_id)
+                student_applied.delete()
+            except StudentApplied.DoesNotExist:
+                error += 1
+
+        if error == 2:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(status=status.HTTP_200_OK)
 
     def get_object(self):
         try:

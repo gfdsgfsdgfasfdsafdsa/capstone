@@ -20,8 +20,9 @@ const ExamDetails = () => {
     const router = useRouter()
     const { mutate } = useSWRConfig()
     const { id } = router.query
-    const { data: exam_details, error } = useSWR(id ? `school/schools/${id}/` : [],
-        { revalidateOnFocus: false })
+    const { data: exam_details, error } = useSWR(id ? `school/schools/${id}/` : [], {
+        revalidateOnFocus: false,
+    })
 
     const [status, setStatus] = useState({
         error: false,

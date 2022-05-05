@@ -215,6 +215,7 @@ class SubmitExamApi(APIView):
                     predicted += (b * student_scores[i - 1])
                     regression_model += ' + (' + str(b) + '*' + str(student_scores[i - 1]) + ')'
             predicted = round(predicted)
+            regression_model += '<br/> y = ' + str(predicted)
 
             values = pd.DataFrame(data, columns=['Course', 'Overall']).query("Overall <= " + str(predicted))
             '''

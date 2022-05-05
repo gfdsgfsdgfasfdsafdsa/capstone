@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { DashboardLayout } from '../../../components/DashboardLayout';
 import axios from 'axios'
 import useSWR from "swr";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import SearchBar from "../../../components/SearchBar";
 import ResultList from "../../../components/schooladmin/result/ResultList";
 import {Box, Container} from "@mui/material";
@@ -12,10 +12,15 @@ const Results = ({ resultList }) => {
     const [pageIndex, setPageIndex] = useState(1);
     const [searchText, setSearchText] = useState('')
 
-    const { data: results } = useSWR(`school/exam/student/results/?page=${pageIndex}&search=${searchText}`, {
+    const { data: results, mutate } = useSWR(`school/exam/student/results/?page=${pageIndex}&search=${searchText}`, {
         fallbackData: resultList,
         revalidateOnFocus: false,
     });
+
+    useEffect(() => {
+        mutate()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [resultList])
 
     const onKeyUpSearch = (e) => {
         if(e.code === 'Enter')

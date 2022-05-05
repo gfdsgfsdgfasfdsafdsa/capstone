@@ -33,8 +33,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-#FRONT_END_URL = 'http://localhost:2222'
-FRONT_END_URL = 'https://courseme.vercel.app'
+FRONT_END_URL = 'http://localhost:2222'
+#FRONT_END_URL = 'https://courseme.vercel.app'
 #  -------------- Main Config ----------
 
 
@@ -72,7 +72,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    #'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 INTERNAL_IPS = [
@@ -102,7 +102,6 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -120,6 +119,7 @@ DATABASES = {
         'POST': '5432',
     }
 }
+'''
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

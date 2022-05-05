@@ -31,6 +31,11 @@ export default function Applied({ studentAppliedList }){
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router.query])
 
+    useEffect(() => {
+        mutate()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [studentAppliedList])
+
     const onKeyUpSearch = (e) => {
         if(e.code === 'Enter')
             setSearchText(e.target.value)

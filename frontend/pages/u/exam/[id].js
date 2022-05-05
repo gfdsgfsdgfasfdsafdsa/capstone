@@ -5,11 +5,13 @@ import useSWR from "swr";
 import Single from "../../../components/student/pages/exam/Single";
 import Loading from "../../../components/Loading";
 import NextNProgress from "nextjs-progressbar";
+import {useRef} from "react";
 
 const ExamId = () => {
     const router = useRouter()
     const { id } = router.query
-    const { data: exam, mutate, error } = useSWR(id ? `student/exam/start/${id}/` : [], {
+    const random = useRef(Date.now())
+    const { data: exam, mutate, error } = useSWR(id ? [`student/exam/start/${id}/`, random]: [], {
         revalidateOnFocus: false
     })
 

@@ -54,7 +54,7 @@ const Login = () => {
                                 gutterBottom
                                 variant="body2"
                             >
-                                coursemeproject@gmail.com
+                                coursemeapp@gmail.com
                             </Typography>
                             {statusCode === 401 && (
                                 <Alert severity="error"

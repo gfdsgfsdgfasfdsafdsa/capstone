@@ -102,7 +102,7 @@ class StudentRegistration(APIView):
                 break
             else:
                 activation_token = secrets.token_urlsafe()
-        '''
+
         message = '{}\n{}'.format('Click the click to activate your account',
                                   settings.FRONT_END_URL+'/activate-account?token='+activation_token)
         send_mail(
@@ -112,7 +112,6 @@ class StudentRegistration(APIView):
             [data['email']],
             fail_silently=False,
         )
-        '''
 
         user = User.objects.create(
             email=data['email'],

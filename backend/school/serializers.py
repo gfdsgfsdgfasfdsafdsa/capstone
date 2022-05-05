@@ -237,7 +237,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Student
-        fields = ['gender', 'school', 'age', 'strand', 'name']
+        fields = ['gender', 'school', 'age', 'strand', 'name', 'id']
 
     def get_name(self, obj):
         return obj.user.name
