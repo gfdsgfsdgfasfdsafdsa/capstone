@@ -147,6 +147,7 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
 
         let hasCourse = false, hasStrand = false, hasOverall = false, hasStudent = false, hasLimit = false, emptyCell = false
         let limit = [], greaterThanLimit = false
+        let overall = 0
 
         csvFileData.map((r, i) => {
             r.map((item, j) => {
@@ -156,15 +157,15 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
                     hasCourse = true
                 }else if(i === 0 && j === 2 && item === 'Strand'){
                     hasStrand = true
+                }else if(r.length-1 === j && item === 'Overall'){
+                    hasOverall = true
                 }else if(i === 0){
                     try{
-                        if(item === 'Overall'){
-                            hasOverall = true
-                            return
-                        }
                         let subject = item.split('/')
                         if(subject.length === 2 && !isNaN(subject[1]) && subject[1] !== ''){
-                            limit.push(parseInt(subject[1]))
+                            let total = parseInt(subject[1])
+                            limit.push(total)
+                            overall += total
                             hasLimit = true
                         }else{
                             hasLimit = false
@@ -178,6 +179,10 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
 
                     if((j === 0 || j === 1 || j === 2) && item === ''){
                         emptyCell = true
+                    }else if(r.length-1 === j){
+                        if(parseInt(item) > overall){
+                            greaterThanLimit = true
+                        }
                     }else if(!isNaN(item) && item !== ''){
                         if(parseInt(item) > limit[j - 3])
                             greaterThanLimit = true
@@ -208,6 +213,10 @@ const ExamHeader = ({ exam, dScrollOpen, setDScrollOpen, csvData, page, setPage 
             return
         }else if(!hasLimit){
             setStatus({ success: false, error: true, loading: false, message: 'Please add question limit Subject/No of items.' })
+            setFile({ ...file, name: '' })
+            return
+        } else if(greaterThanLimit){
+            setStatus({ success: false, error: true, loading: false, message: 'Overall score exceeded.' })
             setFile({ ...file, name: '' })
             return
         }
