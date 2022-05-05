@@ -33,7 +33,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-FRONT_END_URL = 'http://localhost:2222'
+FRONT_END_URL = 'http://localhost:3000'
 #FRONT_END_URL = 'https://courseme.vercel.app'
 #  -------------- Main Config ----------
 
