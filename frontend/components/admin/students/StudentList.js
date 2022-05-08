@@ -115,7 +115,6 @@ export default function StudentList({ studentsList, activated, setActivated, che
     }
 
     async function onClickActivate() {
-        alert('Server')
         let bak = [...checked]
         setChecked([])
         await AxiosInstance.put(`myadmin/students/`, {

@@ -33,8 +33,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-FRONT_END_URL = 'http://localhost:3000'
-#FRONT_END_URL = 'https://courseme.vercel.app'
+# FRONT_END_URL = 'http://localhost:3000'
+FRONT_END_URL = 'https://courseme.vercel.app'
 #  -------------- Main Config ----------
 
 
@@ -191,8 +191,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=40),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=40),
 }
 
 

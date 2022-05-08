@@ -12,7 +12,11 @@ const Results = ({ resultList }) => {
     const [pageIndex, setPageIndex] = useState(1);
     const [searchText, setSearchText] = useState('')
 
-    const { data: results, mutate } = useSWR(`school/exam/student/results/?page=${pageIndex}&search=${searchText}`, {
+    const [filter, setFilter] = useState(false);
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
+
+    const { data: results, mutate } = useSWR(`school/exam/student/results/?page=${pageIndex}&search=${searchText}${filter ? `&from=${fromDate}&to=${toDate}`: ''}`, {
         fallbackData: resultList,
         revalidateOnFocus: false,
     });
@@ -23,8 +27,10 @@ const Results = ({ resultList }) => {
     }, [resultList])
 
     const onKeyUpSearch = (e) => {
-        if(e.code === 'Enter')
+        if(e.code === 'Enter'){
             setSearchText(e.target.value)
+            setPageIndex(1)
+        }
     }
 
     const onChangeSearch = (e) => {
@@ -60,6 +66,12 @@ const Results = ({ resultList }) => {
                             pageIndex={pageIndex}
                             setPageIndex={setPageIndex}
                             students={results}
+                            fromDate={fromDate}
+                            toDate={toDate}
+                            setFromDate={setFromDate}
+                            setToDate={setToDate}
+                            filter={filter}
+                            setFilter={setFilter}
                         />
                     </Box>
                 </Container>

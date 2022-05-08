@@ -202,10 +202,16 @@ class SubmitExamApi(APIView):
             exam_info['Overall'] = overall_score
 
             predicted = 0
+            '''
             xt = x.transpose()
             a = np.dot(xt, x)
             b = np.dot(xt, y)
             beta = np.linalg.solve(a, b)
+            '''
+            xt = x.transpose()
+            a = np.dot(xt, x)
+            k = np.linalg.inv(a)
+            beta = np.dot(np.dot(k, xt), y)
 
             for i, b in enumerate(beta):
                 if i == 0:
@@ -252,7 +258,7 @@ class SubmitExamApi(APIView):
 
                     last_overall = int(row['Overall'])
                     values = values.drop(values[values['Course'] == row['Course']].index)
-                    recommendation_count += 1
+                    #recommendation_count += 1
                     course = row['Course']
                     break
 
@@ -266,6 +272,7 @@ class SubmitExamApi(APIView):
                     course=course,
                     rank=rank,
                 )
+                recommendation_count += 1
                 last_recommended_value = last_overall
             result.regression_model = regression_model
             result.formula = formula

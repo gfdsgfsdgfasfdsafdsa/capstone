@@ -253,6 +253,13 @@ class StudentExamResults(generics.ListAPIView,
     search_fields = ['student__user__name', 'student__strand', 'student__school']
 
     def get_queryset(self):
+        date_from = self.request.query_params.get('from')
+        date_to = self.request.query_params.get('to')
+        if date_from is not None and date_to is not None:
+            return Result.objects.filter(school__user_id=self.request.user.id,
+                                         submitted=True,
+                                         date_taken__range=[date_from + ' 00:00', date_to + ' 23:59'])
+
         return Result.objects.filter(school__user_id=self.request.user.id, submitted=True)
 
     def get_object(self):

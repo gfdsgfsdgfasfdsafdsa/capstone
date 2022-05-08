@@ -85,19 +85,25 @@ export default function Account({ account }){
     };
 
     const [password, setPassword] = useState({
+        oldPass:'',
         newPass: '',
         newPassError: '',
         currentPass: '',
         currentPassError: '',
+        oldPassError: '',
     })
 
     function onChangePass(e){
         setPassword(
-            { ...password, [e.target.name]: e.target.value, newPassError: '', currentPassError: '' }
+            { ...password, [e.target.name]: e.target.value, newPassError: '', currentPassError: '', oldPassError: '' }
         )
     }
 
     async function updatePassOnClick(){
+        if(password.oldPass.length <= 0){
+            setPassword({ ...password, oldPassError: 'Old password is required.' })
+            return
+        }
         if(password.newPass.length < 8){
             setPassword({ ...password, newPassError: 'Please enter at least 8 characters.' })
             return
@@ -113,13 +119,16 @@ export default function Account({ account }){
             message: 'Updating new password.',
         })
         await axiosInstance.post(`${process.env.api}/accounts/profile/`, {
-            password: password.newPass
+            password: password.newPass,
+            old_password: password.oldPass,
         }).then((_r) => {
             setPassword({
+                oldPass: '',
                 newPass: '',
                 newPassError: '',
                 currentPass: '',
                 currentPassError: '',
+                oldPassError: ''
             })
             setStatus({
                 error: false,
@@ -127,13 +136,22 @@ export default function Account({ account }){
                 loading: false,
                 message: 'Password has been successfully updated.',
             })
-        }).catch((_e) => {
-            setStatus({
-                error: true,
-                success: false,
-                loading: false,
-                message: 'Failed to update password.',
-            })
+        }).catch((e) => {
+            if(e.response.status === 406){
+                setStatus({
+                    error: true,
+                    success: false,
+                    loading: false,
+                    message: 'Old password is incorrect.',
+                })
+            }else{
+                setStatus({
+                    error: true,
+                    success: false,
+                    loading: false,
+                    message: 'Failed to update password.',
+                })
+            }
         })
     }
 
@@ -258,6 +276,19 @@ export default function Account({ account }){
                                             item
                                             md={7}
                                             xs={12}>
+                                            <TextField
+                                                value={password.oldPass}
+                                                name="oldPass"
+                                                size="small"
+                                                label="Old Password"
+                                                variant="outlined"
+                                                sx={{ width: '100%', mb: 3 }}
+                                                onChange={onChangePass}
+                                                type="password"
+                                                error={password?.oldPassError?.length >= 1}
+                                                helperText={password?.oldPassError !== '' ? password.oldPassError : null}
+                                                autoComplete="off"
+                                            />
                                             <TextField
                                                 value={password.newPass}
                                                 name="newPass"

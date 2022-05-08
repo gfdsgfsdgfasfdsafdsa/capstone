@@ -54,10 +54,13 @@ class ProfileApiView(APIView):
 
     def post(self, request, format=None):
         # School request
-        if 'password' in request.data:
+        if 'password' in request.data and 'old_password' in request.data:
             user = User.objects.get(id=request.user.id)
-            user.set_password(request.data['password'])
-            user.save()
+            if user.check_password(request.data['old_password']):
+                user.set_password(request.data['password'])
+                user.save()
+            else:
+                return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
         elif request.user.type == 2:
             user = User.objects.get(id=request.user.id)
             user.name = request.data['name']
@@ -96,13 +99,13 @@ class StudentRegistration(APIView):
         if email_exist:
             return Response({ 'email_exist': '1' }, status=status.HTTP_200_OK)
 
+        '''
         activation_token = secrets.token_urlsafe()
         while True:
             if User.objects.filter(activated=activation_token).count() == 0:
                 break
             else:
                 activation_token = secrets.token_urlsafe()
-
         message = '{}\n{}'.format('Click the click to activate your account',
                                   settings.FRONT_END_URL+'/activate-account?token='+activation_token)
         send_mail(
@@ -112,13 +115,14 @@ class StudentRegistration(APIView):
             [data['email']],
             fail_silently=False,
         )
+        '''
 
         user = User.objects.create(
             email=data['email'],
             name=data['name'],
             type=2,
-            #activated=1,
-            activated=activation_token,
+            activated=1,
+            #activated=activation_token,
         )
         user.set_password(request.data['password'])
         user.save()
