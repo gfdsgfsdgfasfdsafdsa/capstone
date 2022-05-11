@@ -169,6 +169,19 @@ const QuestionHeader = ({ questionCount, status, setStatus, totalQuestion, id, u
                                     New Question
                                 </MuiLink>
                             </Link>
+                            <Link href={`/s/exam/${id}/import`} passHref>
+                                <MuiLink
+                                    variant="contained"
+                                    color="primary"
+                                    sx={{
+                                        mr: 1,
+                                        width: '100%',
+
+                                    }}
+                                >
+                                    Import
+                                </MuiLink>
+                            </Link>
                         </>
                     )}
                 </Box>

@@ -245,7 +245,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
 class ResultDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResultDetails
-        fields = ['subject', 'score']
+        fields = ['subject', 'score', 'overall']
 
 class CourseRecommendedSerializer(serializers.ModelSerializer):
     class Meta:
@@ -259,7 +259,7 @@ class ResultSingleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Result
-        fields = ['id', 'date_taken', 'student', 'result_details', 'result_courses', 'formula', 'regression_model']
+        fields = ['id', 'date_taken', 'video', 'tab_switch', 'student', 'result_details', 'result_courses', 'formula', 'regression_model']
 
 # Notification View
 class NotificationStudentSerializer(serializers.ModelSerializer):

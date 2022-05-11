@@ -10,6 +10,7 @@ import {DateTime} from "luxon";
 import AlertCollapse from "../../../AlertCollapse";
 import {useSWRConfig} from "swr";
 import {DashboardLayout} from "../../../DashboardLayout";
+import axios from "axios";
 
 function TabPanel(props) {
     const { children, active } = props;
@@ -24,9 +25,13 @@ function TabPanel(props) {
     );
 }
 
-const Single = ({ school, router, id, mutate }) => {
+const Single = ({ school, router, id, mutate, videoPreview, recordedBlobs, mediaRecorder }) => {
 
     //const { mutate: mutateSWR } = useSWRConfig()
+    const [uploadVid, setUploadVid] = useState({
+        status: false,
+        percent: 0,
+    });
 
     const [tabValue, setTabValue] = useState(0);
     const [subjectName, setSubjectName] = useState(school.school_exam.exam_subjects[0].name)
@@ -59,11 +64,94 @@ const Single = ({ school, router, id, mutate }) => {
     })
     const sentToTheServer = useRef(false)
 
+    const saveResultDetailsSubmitted = useRef(false)
+    async function saveResultDetails(video_id){
+        if(saveResultDetailsSubmitted.current) return
+        saveResultDetailsSubmitted.current = true
+        let switchTab = 0
+        if(localStorage.getItem(school?.id.toString())){
+            switchTab = parseInt(localStorage.getItem(school?.id.toString()))
+            localStorage.removeItem(school?.id.toString())
+        }
+        await AxiosInstance.post(`student/exam/submit/video/${school.id}/`, {
+            video_id: video_id,
+            tab_switch: switchTab,
+        })
+            .then(async (_r) => {
+            })
+    }
+
+    async function uploadVideo(access) {
+        const blob = new Blob(recordedBlobs.current, {type: 'video/mp4'});
+        const metadata = JSON.stringify({
+            name: school?.student_name,
+            mimeType: 'video/mp4',
+            "parents": ['12UqZihJh8Sb2YdBR19yp34pSxWJ2L-g2'],
+        });
+        const requestData = new FormData();
+
+        requestData.append("metadata", new Blob([metadata], {
+            type: "application/json"
+        }));
+        requestData.append("file", blob);
+
+        await axios.post('https://www.googleapis.com/upload/drive/v3/files',
+            requestData,{
+                headers: {
+                    Authorization: `Bearer ${access}`,
+                    'Content-Type': 'video/mp4',
+                },
+                onUploadProgress: (progressEvent) => {
+                    const totalLength = progressEvent.lengthComputable ? progressEvent.total : progressEvent.target.getResponseHeader('content-length') || progressEvent.target.getResponseHeader('x-decompressed-content-length');
+                    if (totalLength !== null) {
+                        setUploadVid({
+                            status: true,
+                            percent: Math.round((progressEvent.loaded * 100) / totalLength),
+                        });
+                    }
+                }
+            }
+        ).then(async ({ data }) => {
+            await saveResultDetails(data.id)
+        }).catch((e) => {
+            console.log(e)
+        })
+    }
+
     const submitAns = async () => {
         if(sentToTheServer.current) return
-        await AxiosInstance.post(`student/exam/submit/${school.id}/`, answers).then((r) => {
-            mutate({ ...school, submitted: true }, false)
+        try{
+            if(school?.video === 'Enabled'){
+                mediaRecorder.current.stop()
+                window.stream.getTracks().forEach(track => track.stop())
+                window.stream = null
+            }
+        }catch{}
+        await AxiosInstance.post(`student/exam/submit/${school.id}/`, answers).then(async (_r) => {
             sentToTheServer.current = true
+
+            if(school?.video === 'Enabled'){
+                let access = ''
+                await axios.post('https://www.googleapis.com/oauth2/v4/token', {
+                    "client_id": '1046398706985-kh1ef3qo4ntiqdef65n67ll822h8e39f.apps.googleusercontent.com',
+                    "client_secret": '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',
+                    "refresh_token": '1//04dTyJXtpfsMDCgYIARAAGAQSNwF-L9IrytHWCOblt6rVheKIIhoRzch4UJ6MONUWCp952SRppORX6wGE_j3B0FfvftailuwOQJY',
+                    "grant_type": "refresh_token"
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then((res) => {
+                    access = res.data.access_token
+                }).catch((e) => {
+                    console.log(e)
+                })
+                await uploadVideo(access)
+            }else{
+                await saveResultDetails('Disabled')
+            }
+
+            mutate({ ...school, submitted: true }, false)
         })
     }
 
@@ -80,6 +168,7 @@ const Single = ({ school, router, id, mutate }) => {
         open: 'no',
     })
     const intervalId = useRef(0)
+    let switchCounted = useRef(false)
 
     useEffect(() => {
         if(!submitState.loading){
@@ -100,6 +189,19 @@ const Single = ({ school, router, id, mutate }) => {
                     setHours(hours < 10 ? `0${hours}` : hours)
                     setMinutes(minutes < 10 ? `0${minutes}` : minutes)
                     setSeconds(seconds < 10 ? `0${seconds}` : seconds)
+                }
+                if(document.visibilityState === 'hidden'){
+                    if(!switchCounted.current){
+                        if(localStorage.getItem(school?.id.toString())){
+                            let v = parseInt(localStorage.getItem(school?.id.toString()))
+                            localStorage.setItem(school?.id.toString(), (v+1).toString())
+                        }else{
+                            localStorage.setItem(school?.id.toString(), "1")
+                        }
+                        switchCounted.current = true
+                    }
+                }else{
+                    switchCounted.current = false
                 }
             }, 1000)
 
@@ -153,11 +255,14 @@ const Single = ({ school, router, id, mutate }) => {
                         text="Reconnected."
                     />
                 </Box>
-                <Loading/>
+                {uploadVid.status ? (
+                    <Loading text={`Uploading video please wait. ${uploadVid.percent}%`}/>
+                ): (
+                    <Loading/>
+                )}
             </>
         )
     }
-
 
     const setSubjectNameSubmit = () => {
         setSubjectName('Submit')
@@ -173,6 +278,8 @@ const Single = ({ school, router, id, mutate }) => {
                     hours={hours}
                     minutes={minutes}
                     seconds={seconds}
+                    videoPreview={videoPreview}
+                    videoEnabled={school?.video === 'Enabled'}
                 />
                 <Container maxWidth={false} sx={{ mt: 3 }}>
                     <Box sx={{ width: '100%' }}>

@@ -75,7 +75,9 @@ class StartExamApi(APIView):
             result = Result.objects.get(school=exam, student__user_id=request.user.id)
             data['date_taken'] = result.date_taken
             data['date_end'] = result.date_end
+            data['video'] = result.video
             data['submitted'] = result.submitted
+            data['student_name'] = request.user.name
         except (Exception,):
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return Response(data, status=status.HTTP_200_OK)
@@ -96,18 +98,34 @@ class StartExamApi(APIView):
 
         try:
             # Check if result exist
-            Result.objects.get(student=student, school=school)
+            result = Result.objects.get(student=student, school=school)
+            result.video = request.data['start']
+            result.save()
         except Result.DoesNotExist:
             # Create if not
             date_end = datetime.now(tz=timezone.utc) + timedelta(hours=hours) + timedelta(minutes=minutes)
             Result.objects.create(student=student,
                                   school=school,
                                   date_taken=datetime.now(tz=timezone.utc),
+                                  video=request.data['start'],
                                   date_end=date_end)
 
         return Response(status=status.HTTP_200_OK)
 
 
+class SubmitResultDetails(APIView):
+    def post(self, request, format=None, **kwargs):
+        try:
+            data = request.data
+            school = School.objects.select_related('school_exam').get(id=kwargs['pk'])
+            result = Result.objects.get(school=school, student__user=request.user)
+            result.video = data['video_id']
+            result.tab_switch = data['tab_switch']
+            result.save()
+
+            return Response(status=status.HTTP_200_OK)
+        except (Exception,):
+            return Response(status=status.HTTP_200_OK)
 '''
 (0, 'multipleChoice'),
 (1, 'checkbox'),
@@ -192,12 +210,15 @@ class SubmitExamApi(APIView):
             for col in data.columns:
                 if j >= skip_col and col != 'Overall':
                     for r in result_d:
-                        if r.subject == col.split('/')[0]:
+                        subject_s_total = col.split('/')
+                        if r.subject == subject_s_total[0]:
                             student_scores.append(r.score)
                             exam_info[r.subject] = r.score
                             overall_score += r.score
                             formula += " + &beta;"+ str(beta_count) +"("+ r.subject +")"
                             beta_count += 1
+                            r.overall = int(subject_s_total[1])
+                            r.save()
                 j += 1
             exam_info['Overall'] = overall_score
 
@@ -390,9 +411,9 @@ class ResultApi(APIView):
                         'id': r.id,
                         'subject': r.subject,
                         'score': r.score,
-                        'total': Subject.objects.select_related('exam', 'exam__school')
-                            .get(exam__school_id=kwargs['pk'], name=r.subject).total_questions
+                        'total': r.overall
                     }
+                    #Subject.objects.select_related('exam', 'exam__school').get(exam__school_id=kwargs['pk'], name=r.subject).total_questions
                     result_list.append(obj)
                 for r in CourseRecommended.objects.filter(result=result):
                     obj = {

@@ -21,14 +21,14 @@ const SubjectName = memo(function SubjectName({ name }) {
     )
 })
 
-const ExamHeader = ({ schoolName, subject, hours, minutes, seconds }) => {
+const ExamHeader = ({ schoolName, subject, hours, minutes, seconds, videoPreview, videoEnabled }) => {
 
     return (
         <>
             <Box
                 sx={{
                     display: 'flex',
-                    justifyContent: 'start',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                     position: 'sticky',
                     top: '63px',
@@ -58,12 +58,30 @@ const ExamHeader = ({ schoolName, subject, hours, minutes, seconds }) => {
                 </Box>
                 */}
                 <Box sx={{ mt: 1 }}>
-                    <SchoolName name={schoolName}/>
-                    <SubjectName name={subject}/>
-                    <Typography variant="cool">
-                        Remaining Time {hours}:{minutes}:{seconds}
-                    </Typography>
+                    <Box>
+                        <SchoolName name={schoolName}/>
+                        <SubjectName name={subject}/>
+                        <Typography variant="cool">
+                            Remaining Time {hours}:{minutes}:{seconds}
+                        </Typography>
+                    </Box>
                 </Box>
+                {videoEnabled && (
+                    <Box>
+                        <video
+                            ref={videoPreview}
+                            style={{
+                                border: '2px solid #5048E5',
+                                width: '6.6rem',
+                                height: '5rem',
+                                backgroundColor: 'transparent',
+                            }}
+                            playsInline={true}
+                            autoPlay={true}
+                            muted={true}
+                        />
+                    </Box>
+                )}
             </Box>
         </>
     )

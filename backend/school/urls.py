@@ -2,7 +2,8 @@ from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
 from .views import ExamViewSet, QuestionUpdateDestroy, QuestionListCreate, SchoolExamRetrieve, CsvData, \
-    StudentExamResults, StudentExamResult, StudentAppliedList, NotificationDetails, Notification, DashboardDetails
+    StudentExamResults, StudentExamResult, StudentAppliedList, NotificationDetails, Notification,\
+    DashboardDetails, ImportQuestion
 
 router = DefaultRouter()
 router.register("exam", ExamViewSet)
@@ -19,6 +20,7 @@ urlpatterns = [
     path('notification/', Notification.as_view()),
     path('notification/details/', NotificationDetails.as_view()),
     path('dashboard/', DashboardDetails.as_view()),
+    path("import/question/subject/<int:pk>/", ImportQuestion.as_view()),
 ]
 
 

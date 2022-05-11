@@ -10,6 +10,8 @@ class Result(models.Model):
     date_taken = models.DateTimeField(null=True, blank=True)
     date_end = models.DateTimeField(null=True, blank=True)
     formula = models.CharField(max_length=255, default='')
+    video = models.CharField(max_length=255, default='None')
+    tab_switch = models.CharField(max_length=255, default=0)
     regression_model = models.CharField(max_length=255, default='')
 
     class Meta:
@@ -24,6 +26,7 @@ class ResultDetails(models.Model):
         Result, related_name="result_details", on_delete=models.CASCADE)
     score = models.IntegerField()
     subject = models.CharField(max_length=255)
+    overall = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = 'Result Detail'

@@ -26,7 +26,7 @@ const Notification = ({ isStudent }) => {
     const notifQuery = isStudent ? 'student/notification/' : 'school/notification/'
 
     const { data: notif, mutate: notifMutate } = useSWR(notifQuery, {
-        refreshInterval: 1000,
+        refreshInterval: 100000,
     });
     const [loadingReadAll, setLoadingReadAll] = useState(false)
 

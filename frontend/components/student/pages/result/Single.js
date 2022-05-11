@@ -13,11 +13,29 @@ import Image from 'next/image'
 import Survey from "../../result/Survey";
 
 export default function Single({ result }){
+    /*
     const [expanded, setExpanded] = useState();
 
     const handleChange = (panel) => (event, newExpanded) => {
         setExpanded(newExpanded ? panel : false);
     };
+     */
+
+    const courseRecommendArranged = (course) => {
+        if(!course) return []
+        let data = []
+        for(let i = 0; i < course.length; i++){
+            if(!data){
+                data.push({ id: course[i].id, course: course[i].rank, rank: course[i].rank })
+            }else if(data && data[data.length-1]?.rank === course[i].rank){
+                data[data.length-1].course += `${course[i].course}, `
+            }else{
+                data.push({ id: course[i].id, course: course[i].course+', ', rank: course[i].rank })
+            }
+
+        }
+        return data
+    }
 
     return (
         <>
@@ -95,34 +113,59 @@ export default function Single({ result }){
                     </CardContent>
                 </Card>
                 <Survey/>
-                <Box mt={3} pb={10} ml={3}>
-                    <>
-                        <Box>
-                            <Typography variant="cool" mb={2}>
-                                Course Recommended
-                            </Typography>
-                        </Box>
+                <Card sx={{ marginTop: '20px', marginBottom: '100px' }}>
+                    <CardContent sx={{ padding: '12px 24px' }}>
+                        <Typography variant="cool">
+                            Course Recommended
+                        </Typography>
                         <Box>
                             <Typography variant="caption" mb={2}>
                                 Same no. in ranking has no particular order
                             </Typography>
                         </Box>
-                        {result?.course_recommended.length === 0 && (
+                        {result?.course_recommended.length === 0 ? (
                             <Box sx={{ pl: 5, mt: 2 }}>
                                 <Typography variant="body2" mb={2}>
                                     Unable to get result due to your score.
                                 </Typography>
                             </Box>
+                        ): (
+                            <TableContainer sx={{ marginTop: '10px' }}>
+                                <Table sx={{ minWidth: 300 }} size="small" aria-label="a dense table">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={{ width: 150 }}>
+                                                Rank
+                                            </TableCell>
+                                            <TableCell align="left">
+                                                Course
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {courseRecommendArranged(result?.course_recommended).map((d, i) => (
+                                            <TableRow key={d.id}>
+                                                <TableCell sx={{ pl: 4 }}>
+                                                    {d.rank}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {d.course.substring(0, d.course.length - 2)}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        {/*result?.result_courses.map((d, i) => (
+                                            <Box key={d.id} sx={{ pl: 5 }}>
+                                                <Typography variant="cool" mb={2}>
+                                                    {d.rank} <span style={{ marginLeft: '10px' }}>{d.course}</span>
+                                                </Typography>
+                                            </Box>
+                                        ))*/}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
                         )}
-                        {result?.course_recommended.map((d) => (
-                            <Box key={d.id} sx={{ pl: 5 }}>
-                                <Typography variant="cool" mb={2}>
-                                    {d.rank} <span style={{ marginLeft: '10px' }}>{d.course}</span>
-                                </Typography>
-                            </Box>
-                        ))}
-                    </>
-                </Box>
+                    </CardContent>
+                </Card>
             </Container>
         </>
     )

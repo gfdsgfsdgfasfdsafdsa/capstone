@@ -1,4 +1,5 @@
 import datetime
+from base64 import b64encode
 
 from django.db.models.functions import ExtractMonth
 from django.utils import timezone
@@ -519,4 +520,58 @@ class DashboardDetails(generics.ListAPIView):
 # Dashboard end
 
 
+class ImportQuestion(APIView):
+    def post(self, request, *args, **kwargs):
+        subject_id = kwargs.get('pk', '')
+        if subject_id != '':
+            subject = Subject.objects.get(id=subject_id)
+            score_cnt = 0
+            score_cnt += subject.current_score
+            if request.data['delete']:
+                Question.objects.filter(subject_id=subject_id).delete()
+                score_cnt -= subject.current_score
+            data = request.data['data']
+            for d in data:
+                score = int(d['points'])
+                q_type = -1
+                if d['type'] == 'Multiple':
+                    q_type = 0
+                elif d['type'] == 'Checkbox' :
+                    q_type = 1
+                elif d['type'] == 'Fillintheblank' :
+                    q_type = 2
+
+                question = Question.objects.create(
+                    text=d['question'],
+                    type=q_type,
+                    score=score,
+                    subject_id=subject_id
+                )
+
+                answer = d['answer'].split(',')
+                answer = [x.strip() for x in answer]
+                score_cnt += (score*len(answer))
+                if q_type == 0 or q_type == 1:
+                    for i in range(5):
+                        cur_index = 'c'+str(i+1)
+                        if d[cur_index] == '':
+                            break
+                        else:
+                            correct = 'false'
+                            if 'Choice'+str(i+1) in answer:
+                                correct='true'
+                            Choice.objects.create(
+                                correct=correct,
+                                text=d[cur_index],
+                                question=question
+                            )
+                elif q_type == 2:
+                    Choice.objects.create(
+                        correct=','.join(answer),
+                        question=question
+                    )
+            subject.current_score = score_cnt
+            subject.save()
+
+        return Response(status=status.HTTP_200_OK)
 
