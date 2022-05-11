@@ -113,6 +113,7 @@ const CheckDelete = memo(function CheckDelete(props) {
             <Box sx={{ display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
                 Question {qI+1}
                 <Checkbox
+                    id={`checkbox-question-${qId}`}
                     onClick={() => checkBoxSelected(qId)}
                     size="small"
                 />

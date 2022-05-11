@@ -279,6 +279,7 @@ function ImportQuestionUI({ id, mutate }){
                 <CardContent>
                     <Typography
                         variant="body1"
+                        sx={{ mb: 1 }}
                     >
                         <MuiLink
                             href="/static/Sample File.docx"
@@ -287,16 +288,25 @@ function ImportQuestionUI({ id, mutate }){
                         </MuiLink>
                         <span> and save as plain text or .txt format</span>
                     </Typography>
+                    <Image
+                        src="/static/export_image.png"
+                        width={450}
+                        height={270}
+                        alt="logo"
+                        placeholder="blur"
+                        blurDataURL="/static/images/default.png"
+                        objectFit="contain"
+                    />
                     <Typography
                         variant="body2"
-                        sx={{ mt: 2 }}
+                        sx={{ mt: 1 }}
                     >
                         If you want special characters to be read please save as UTF-8 format
                     </Typography>
                     <Image
                         src="/static/import_encoding.png"
-                        width={500}
-                        height={180}
+                        width={400}
+                        height={240}
                         alt="logo"
                         placeholder="blur"
                         blurDataURL="/static/images/default.png"

@@ -12,7 +12,7 @@ import {
     Check as CheckIcon,
 } from "@mui/icons-material";
 import axiosInstance from "../../../utils/axiosInstance";
-import {useState} from "react";
+import {useCallback, useState} from "react";
 
 const QuestionHeader = ({ questionCount, status, setStatus, totalQuestion, id, update = true,
                             checked, setChecked, mutate, hideChoices, setHideChoices, subjectQuestions }) => {
@@ -41,6 +41,16 @@ const QuestionHeader = ({ questionCount, status, setStatus, totalQuestion, id, u
             setStatus({ error: true, loading:false, success: false, infoMessage: 'Failed to delete question.' })
         })
         setConfirmDelete(false)
+    }
+
+    const cancelChecked = () => {
+        for(let i = 0; i < checked.length; i++){
+            document.getElementById(`checkbox-question-${checked[i]}`).click();
+        }
+        setChecked([])
+        setStatus({ error: false, loading:false, success: false, infoMessage: '' })
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }
 
     return (
@@ -88,10 +98,7 @@ const QuestionHeader = ({ questionCount, status, setStatus, totalQuestion, id, u
                             {checked.length >= 1 && (
                                 <Box ml={1}>
                                     <Tooltip title="Cancel Selected" placement="bottom">
-                                        <IconButton onClick={() => {
-                                            setChecked([])
-                                            setStatus({ error: false, loading:false, success: false, infoMessage: '' })
-                                        }}>
+                                        <IconButton onClick={cancelChecked}>
                                             <CancelIcon sx={{ fontSize: '22px' }} color="error"/>
                                         </IconButton>
                                     </Tooltip>
