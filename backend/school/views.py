@@ -1,4 +1,5 @@
 import datetime
+import os
 from base64 import b64encode
 
 from django.db.models.functions import ExtractMonth
@@ -15,6 +16,9 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import filters
 
+from backend import settings
+from backend.Google import create_spreadsheet, spreadsheet_top_insert, spreadsheet_append, spreadsheet_get_data, \
+    spreadsheet_delete_row
 from .serializers import ExamSerializer, Exam, Subject, Question, QuestionSerializer, School, SchoolSerializer, Result, \
     ResultSerializer, ResultSingleSerializer, StudentSerializer, StudentApplied, Student, AppliedStudentSerializer, \
     NotificationSerializer, Choice, CourseRecommended
@@ -36,6 +40,7 @@ class ExamViewSet(mixins.ListModelMixin,
         except (Exception,):
             return Response({})
     def update(self, request, *args, **kwargs):
+        subject_and_score = ''
         try:
             exam = Exam.objects.get(school__user_id=request.user.id)
             if int(kwargs['pk']) != exam.id:
@@ -54,6 +59,7 @@ class ExamViewSet(mixins.ListModelMixin,
             list_of_subjects = []
             for col in csv.columns:
                 if i > skip_col and col != 'Overall':
+                    subject_and_score += (str(col)+',')
                     a = col.split('/')
                     list_of_subjects.append(a[0])
                     total_questions.append(a[1])
@@ -87,6 +93,39 @@ class ExamViewSet(mixins.ListModelMixin,
                         s.save()
                 j += 1
             exam.csv_file = request.FILES['csv_file']
+
+            d = subject_and_score[:-1]
+            subjects_lists = d.split(',')
+            try:
+                if exam.spreadsheet_id is None:
+                    school = School.objects.get(user=request.user)
+                    ss_id = create_spreadsheet(school.name)
+                    spreadsheet_top_insert(ss_id, d)
+                    spreadsheet_append(ss_id, [
+                        ['Student', 'Course', 'Strand'] + subjects_lists + ['Overall']
+                    ])
+                    exam.spreadsheet_id = ss_id
+                    exam.save()
+                else:
+                    ok = True
+                    data = spreadsheet_get_data(exam.spreadsheet_id)[0]
+                    if len(data) == len(subjects_lists):
+                        for s in subjects_lists:
+                            if s not in data:
+                                ok = False
+                                break
+                    else:
+                        ok = False
+                    if not ok:
+                        spreadsheet_delete_row(exam.spreadsheet_id, 0, 1)
+                        spreadsheet_top_insert(exam.spreadsheet_id, d)
+                        data = [
+                            ['---------------------' for i in range(len(subjects_lists)+4)],
+                            ['Student', 'Strand', 'Course'] + subjects_lists + ['Overall']
+                        ]
+                        spreadsheet_append(exam.spreadsheet_id, data)
+            except (Exception,):
+                pass
 
         if 'time_limit' in request.data:
             exam.time_limit = request.data['time_limit']
@@ -288,6 +327,18 @@ class StudentExamResult(generics.RetrieveAPIView, generics.DestroyAPIView):
                 student_applied.delete()
             except StudentApplied.DoesNotExist:
                 error += 1
+
+            try:
+                exam = Exam.objects.get(school__user=request.user)
+                if exam.spreadsheet_id is not None:
+                    data = spreadsheet_get_data(exam.spreadsheet_id)
+                    df = pd.DataFrame(data)
+                    indexes = df.index[df[df.columns[0]] == str(student_id)].tolist()
+                    if len(indexes) > 0:
+                        spreadsheet_delete_row(exam.spreadsheet_id, indexes[0], indexes[len(indexes)-1]+1)
+            except (Exception,):
+                pass
+
 
         if error == 2:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -575,3 +626,16 @@ class ImportQuestion(APIView):
 
         return Response(status=status.HTTP_200_OK)
 
+
+class ExportCSV(APIView):
+    def get(self, request, format=None):
+        exam = Exam.objects.get(school__user=request.user)
+        d = spreadsheet_get_data(exam.spreadsheet_id)
+        df = pd.DataFrame(d)
+        df = df.iloc[1:]
+        file_path = os.path.join(settings.BASE_DIR, 'files/'+exam.spreadsheet_id+'.csv')
+        df.to_csv(file_path, index=False, header=False)
+        data = dict()
+        data['spreadsheetId'] = exam.spreadsheet_id
+
+        return Response(data, status=status.HTTP_200_OK)

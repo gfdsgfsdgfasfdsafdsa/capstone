@@ -94,99 +94,146 @@ export default function Result({ result, id }){
     }
 
     function generatePDF() {
-        const pdf = new jsPDF();
 
-        let startX = 15;
-        //let finalY = pdf.lastAutoTable.finalY;
+		const pdf = new jsPDF();
 
-        pdf.setProperties({
-            title: "Result"
-        });
+		let startX = 15;
 
-        pdf.setFontSize(30)
-        pdf.setFont(undefined, 'bold').text(result?.student?.name, startX, 20)
-            .setFont(undefined, 'normal')
+		pdf.setProperties({
+			title: `${result?.student?.name.toUpperCase()}`
+		});
 
-        pdf.setFontSize(10)
-        pdf.text(`Date Taken ${DateTime.fromISO(result?.date_taken).toFormat('LLL dd, yyyy')}`, startX, 25);
+		pdf.setFontSize(20)
+		pdf.setFont(undefined, 'bold').text("CourseMe", startX, 18)
 
-        pdf.setFontSize(18)
-        pdf.setFont(undefined, 'bold').text(`Student Information`, startX, 40);
+		pdf.setFontSize(11)
+		pdf.setFont(undefined, 'bold').text(`NAME: `, startX, 27);
+		pdf.setFont(undefined, 'normal').text(`${result?.student?.name.toUpperCase()}`, startX+14, 27);
 
-        pdf.setFontSize(12)
-        pdf.setFont(undefined, 'normal').text(`Strand: `, startX, 47);
-        pdf.setFont(undefined, 'normal').text(result?.student?.strand, startX+20, 47);
+		pdf.setFont(undefined, 'bold').text(`DATE: `, startX, 34);
+		pdf.setFont(undefined, 'normal').text(`${DateTime.fromISO(result?.date_taken).toFormat('LLL dd, yyyy').toUpperCase()}`, startX+14, 34);
 
-        pdf.setFont(undefined, 'normal').text(`Age: `, startX, 54);
-        pdf.setFont(undefined, 'normal').text(result?.student?.age.toString(), startX+20, 54);
+		let spaceInfo = 48;
 
-        pdf.setFont(undefined, 'normal').text(`School: `, startX, 61);
-        pdf.setFont(undefined, 'normal').text(result?.student?.school, startX+20, 61);
+		pdf.setFontSize(13)
+		pdf.setFont(undefined, 'bold').text(`STUDENT INFORMATION`, startX, spaceInfo);
 
-        pdf.setFont(undefined, 'normal').text(`Gender: `, startX, 68);
-        pdf.setFont(undefined, 'normal').text(result?.student?.gender, startX+20, 68);
+		pdf.setFontSize(11)
+		pdf.setFont(undefined, 'bold').text(`STRAND: `, startX, spaceInfo+8);
+		pdf.setFont(undefined, 'normal').text(`${result?.student?.strand.toUpperCase()}`, startX+19, spaceInfo+8);
+
+		pdf.setFont(undefined, 'bold').text(`AGE: `, startX, spaceInfo+15);
+		pdf.setFont(undefined, 'normal').text(`${result?.student?.age.toString()}`, startX+11, spaceInfo+15);
+
+		pdf.setFont(undefined, 'bold').text(`School from: `, startX, spaceInfo+22);
+		pdf.setFont(undefined, 'normal').text(`${result?.student?.school.toUpperCase()}`, startX+26, spaceInfo+22);
+
+		pdf.setFont(undefined, 'bold').text(`Gender: `, startX, spaceInfo+29);
+		pdf.setFont(undefined, 'normal').text(`${result?.student?.gender.toUpperCase()}`, startX+17, spaceInfo+29);
+
+		let spaceExam = spaceInfo+45;
+
+		pdf.setFontSize(13)
+		pdf.setFont(undefined, 'bold').text(`EXAM RESULT`, startX, spaceExam);
+
+        let exam_a_score = []
+        let exam_a_score_space = 0
+        result?.result_details.map((s, i) => {
+            exam_a_score_space += 2
+            exam_a_score.push([s.subject, `${s.score}/${s.overall}`])
+        })
+        /*
+        exam_a_score.push(['test', 'test'])
+        exam_a_score.push(['test', 'test'])
+
+         */
+
+		autoTable(pdf, {
+			theme: 'grid',
+			startY: spaceExam+3,
+			styles: {
+				fontStyle: 'bold',
+				textColor: 20,
+				lineColor: 20,
+			},
+			body: [
+                ['Subject', 'Score'],
+                ...exam_a_score,
+			],
+			bodyStyles: { fontStyle: 'normal' },
+			columnStyles: {
+				0: { cellWidth: 80 },
+			 },
+            didParseCell(data) {
+                if (data.row.index === 0) {
+                    data.cell.styles.fontStyle = "bold";
+                    data.cell.styles.fontSize = 11;
+                }
+            }
+		})
+        console.error = () => {};
 
 
-        let spaceExam = 10*4; //3 lines for subject + exam result title = 4
+		let spaceRecommendCourse = spaceExam+ 40 + exam_a_score_space*2;
 
-        pdf.setFontSize(18)
-        pdf.setFont(undefined, 'bold').text(`Exam Result`, startX, 40+spaceExam);
+		pdf.setFontSize(13);
+		pdf.setFont(undefined, 'bold').text(`COURSE RECOMMENDED`, startX, spaceRecommendCourse);
 
-
-        pdf.setFontSize(12)
-        {result?.result_details.map((s, i) => {
-            pdf.setFont(undefined, 'normal').text(`${s.subject}`, startX, 47+(i*5)+spaceExam);
-            pdf.setFont(undefined, 'normal').text(`${s.score}/${s.overall}`, startX+30, 47+(i*5)+spaceExam);
-        })}
-
-
-        let spaceRecommendCourse = 68+spaceExam+5;
-
-
-        pdf.setFontSize(18);
-        pdf.setFont(undefined, 'bold').text(`Course Recommended`, startX, spaceRecommendCourse);
-
-        let additionalTblRow = 0
+        let additionalTblRow = 0, add = 0
         let coursesRecommended = courseRecommendArranged(result?.result_courses).map((d, i) => {
             if(d.course.length > 66){
-                additionalTblRow += Math.round(d.course.length/66)*3
+                additionalTblRow += Math.round(d.course.length/66)
             }
             return [d.rank, d.course.substring(0, d.course.length - 2)]
         })
 
-        if(coursesRecommended){
-            autoTable(pdf, {})
+        if(coursesRecommended?.length){
             autoTable(pdf, {
                 theme: 'grid',
-                startY: spaceRecommendCourse+5,
+                startY: spaceRecommendCourse+3,
                 styles: {
                     fontStyle: 'bold',
                     textColor: 20,
                     lineColor: 20,
                 },
-                head: [['Rank', 'Courses']],
-                body: [...coursesRecommended],
-                headStyles: { halign: 'center',},
-                bodyStyles: { halign: 'center', fontStyle: 'normal' },
-                columnStyles: {
-                    1: {
-                        halign: 'left',
+                body: [
+                    ['Rank', 'Courses'],
+                    ...coursesRecommended
+                ],
+                headerStyles: { halign: 'left',},
+                bodyStyles: { halign: 'left', fontStyle: 'normal' },
+                columnStyles: { 1: { halign: 'left' } },
+                didParseCell(data) {
+                    if (data.row.index === 0) {
+                        data.cell.styles.fontStyle = "bold";
+                        data.cell.styles.fontSize = 11;
                     }
-                },
+                }
             })
         }else{
-            pdf.setFontSize(12);
-            pdf.setFont(undefined, 'normal').text('Unable to calculate score', startX, 80+spaceExam);
+            add += 10
+            pdf.setFontSize(11);
+            pdf.setFont(undefined, 'normal').text('UNABLE TO GENERATE RECOMMENDED COURSE', startX, spaceRecommendCourse+8);
         }
-        console.error = () => {};
+        if(coursesRecommended?.length <= 2){
+            add += 10
+        }else if (coursesRecommended?.length <= 3){
+            add += 5
+        }else if (coursesRecommended?.length <= 5){
+            add += 0
+        }else if (coursesRecommended?.length <= 7){
+            add -= 4
+        }else if (coursesRecommended?.length <= 10){
+            add -= 10
+        }
 
-        let spaceRegression = spaceRecommendCourse + ((coursesRecommended?.length+1)*10) + 6 + additionalTblRow; //3 rank line + table header = 4
+		let spaceRegression = spaceRecommendCourse + ((coursesRecommended?.length+1)*10) + additionalTblRow + add;
 
-        pdf.setFontSize(18);
-        pdf.setFont(undefined, 'bold').text(`Regression Model`, startX, spaceRegression);
+		pdf.setFontSize(13);
+		pdf.setFont(undefined, 'bold').text(`REGRESSION MODEL`, startX, spaceRegression);
 
-        pdf.setFontSize(12);
-        pdf.setFont(undefined, 'normal').text(result?.formula, startX, spaceRegression + 10);
+		pdf.setFontSize(11);
+        pdf.setFont(undefined, 'normal').text(result?.formula.replaceAll("&beta;", "B"), startX, spaceRegression + 10);
         let regression = result?.regression_model.split('<br/>');
         let formula = regression[0].split('+')
         let display_formula = ''
@@ -303,6 +350,7 @@ export default function Result({ result, id }){
                                 variant="outlined"
                                 size="small"
                                 color="error"
+                                disabled={loading}
                                 onClick={() => setOpenDialog(true)}
                             >
                                 Delete Result
@@ -432,7 +480,19 @@ export default function Result({ result, id }){
                             >
                                 Video Link:
                                 &nbsp;
-                                {result?.video !== 'Disabled' ? (
+                                {result?.video === 'Disabled' || result?.video === 'Enabled' || result?.video === 'None' ? (
+                                    <>
+                                        {result?.video === 'Disabled' && (
+                                            'Disabled'
+                                        )}
+                                        {result?.video === 'Enabled' && (
+                                            'Unable to Save Video'
+                                        )}
+                                        {result?.video === 'None' && (
+                                            'N/A'
+                                        )}
+                                    </>
+                                ):(
                                     <MuiLink
                                         href={`https://drive.google.com/file/d/${result?.video}/view`}
                                         target="_blank"
@@ -441,10 +501,6 @@ export default function Result({ result, id }){
                                     >
                                         {`https://drive.google.com/file/d/${result?.video}/view`}
                                     </MuiLink>
-                                ):(
-                                    result?.video !== 'Enabled' ? (
-                                        'Unable to Save Video.'
-                                    ): (result?.video)
                                 )}
                             </Typography>
                             <TableContainer sx={{ marginTop: '10px' }}>

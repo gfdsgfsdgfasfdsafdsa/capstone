@@ -16,12 +16,12 @@ import { DateTime } from 'luxon'
 import {PAGINATION_COUNT, paginationRecordCount} from "../../../config/settings";
 import {useEffect, useState} from "react";
 import {
-    Cancel as CancelIcon,
+    FileDownload as FileDownloadIcon
 } from '@mui/icons-material'
 
 
 export default function ResultList({ pageIndex, setPageIndex, students,
-    fromDate, setFromDate, toDate, setToDate, filter, setFilter
+    fromDate, setFromDate, toDate, setToDate, filter, setFilter, onClickExportCSV
                                    }){
 
     useEffect(() => {
@@ -56,6 +56,17 @@ export default function ResultList({ pageIndex, setPageIndex, students,
                     alignItems: 'center',
                 }}
             >
+                <Button
+                    size="small"
+                    variant="contained"
+                    color="success"
+                    sx={{ pb: 1, mt: 1 }}
+                    endIcon={<FileDownloadIcon/>}
+                    disabled={students?.count === 0}
+                    onClick={onClickExportCSV}
+                >
+                    Export CSV
+                </Button>
                 <TextField
                     label="From"
                     type="date"
@@ -140,7 +151,7 @@ export default function ResultList({ pageIndex, setPageIndex, students,
                                         key={student.id}
                                     >
                                         <TableCell>
-                                            {student.id}
+                                            {student.student.id}
                                         </TableCell>
                                         <TableCell>
                                             {student.student.name}

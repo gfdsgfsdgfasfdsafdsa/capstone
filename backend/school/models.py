@@ -17,7 +17,8 @@ class Exam(models.Model):
     csv_file = models.FileField(upload_to=path, blank=True, null=True)
     time_limit = models.CharField(max_length=10, default="00:00")
     is_published = models.BooleanField(default=False)
-    
+    spreadsheet_id = models.CharField(null=True, blank=True, max_length=255)
+
     def __str__(self):
         n = self.school.name
         if n:

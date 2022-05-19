@@ -7,6 +7,7 @@ import SearchBar from "../../../components/SearchBar";
 import ResultList from "../../../components/schooladmin/result/ResultList";
 import {Box, Container} from "@mui/material";
 import NextNProgress from "nextjs-progressbar";
+import AxiosInstance from "../../../utils/axiosInstance";
 
 const Results = ({ resultList }) => {
     const [pageIndex, setPageIndex] = useState(1);
@@ -20,6 +21,21 @@ const Results = ({ resultList }) => {
         fallbackData: resultList,
         revalidateOnFocus: false,
     });
+
+    const onClickExportCSV = async () => {
+        await AxiosInstance.get(`school/export/csv/`).then(({data}) => {
+            let link = `${process.env.api}/media/files/${data?.spreadsheetId}.csv`
+            const a = document.createElement('a')
+            a.target = "_blank"
+            a.href = link
+            a.download = link.split('/').pop()
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+        }).catch((_e) => {
+            alert('Something went wrong.')
+        })
+    }
 
     useEffect(() => {
         mutate()
@@ -72,6 +88,7 @@ const Results = ({ resultList }) => {
                             setToDate={setToDate}
                             filter={filter}
                             setFilter={setFilter}
+                            onClickExportCSV={onClickExportCSV}
                         />
                     </Box>
                 </Container>

@@ -11,16 +11,93 @@ import {
     Paper,
     Link as MuiLink,
     Pagination,
-    Stack,
+    Stack, TextField, Button,
 } from '@mui/material';
 import Link from 'next/link'
 import Image from 'next/image'
 import {DateTime} from "luxon";
 import {PAGINATION_COUNT, paginationRecordCount} from "../../../config/settings";
+import {useEffect} from "react";
 
-const ResultList = ({ pageIndex, setPageIndex, results }) => {
+const ResultList = ({ pageIndex, setPageIndex, results,
+                        fromDate, setFromDate, toDate, setToDate, filter, setFilter,
+                    }) => {
+
+    useEffect(() => {
+        setFromDate(new Date().toISOString().slice(0, 10))
+        setToDate(new Date().toISOString().slice(0, 10))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    const setFromDateValue = (e) => {
+        setFromDate(e.target.value)
+        setPageIndex(1)
+    }
+
+    const setToDateValue = (e) => {
+        setToDate(e.target.value)
+        setPageIndex(1)
+    }
+
+    const onClickFilter = () => {
+        setFilter(!filter)
+    }
+
     return (
         <>
+            <Card
+                sx={{
+                    mt: 1,
+                    mb: 1,
+                    display: 'flex',
+                    justifyContent: 'end',
+                    gap: 1,
+                    alignItems: 'center',
+                }}
+            >
+                <TextField
+                    label="From"
+                    type="date"
+                    size="small"
+                    margin="normal"
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    value={fromDate}
+                    onChange={setFromDateValue}
+                />
+                <TextField
+                    label="To"
+                    type="date"
+                    size="small"
+                    margin="normal"
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    onChange={setToDateValue}
+                    value={toDate}
+                />
+                {!filter ? (
+                    <Button
+                        size="small"
+                        variant="contained"
+                        sx={{ pb: 1, mt: 1, mr: 2 }}
+                        onClick={onClickFilter}
+                    >
+                        Filter
+                    </Button>
+                ): (
+                    <Button
+                        size="small"
+                        variant="contained"
+                        color="error"
+                        sx={{ pb: 1, mt: 1, mr: 2 }}
+                        onClick={onClickFilter}
+                    >
+                        Cancel Filter
+                    </Button>
+                )}
+            </Card>
             <Card>
                 <Box>
                     <Paper style={{ overflowX: 'auto' }}>
@@ -59,7 +136,8 @@ const ResultList = ({ pageIndex, setPageIndex, results }) => {
                                             <Box
                                                 sx={{
                                                     alignItems: 'center',
-                                                    display: 'flex'
+                                                    display: 'flex',
+                                                    height: 15
                                                 }}
                                             >
                                                 <Image

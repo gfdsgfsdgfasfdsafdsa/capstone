@@ -10,7 +10,11 @@ const Results = ({ resultList }) => {
     const [pageIndex, setPageIndex] = useState(1);
     const [searchText, setSearchText] = useState('')
 
-    const { data: results } = useSWR(`student/exam/results/?page=${pageIndex}&search=${searchText}`, {
+    const [filter, setFilter] = useState(false);
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
+
+    const { data: results } = useSWR(`student/exam/results/?page=${pageIndex}&search=${searchText}${filter ? `&from=${fromDate}&to=${toDate}`: ''}`, {
         fallbackData: resultList
     });
 
@@ -41,6 +45,12 @@ const Results = ({ resultList }) => {
                 setSearchText={setSearchText}
                 pageIndex={pageIndex}
                 setPageIndex={setPageIndex}
+                fromDate={fromDate}
+                setFromDate={setFromDate}
+                toDate={toDate}
+                setToDate={setToDate}
+                filter={filter}
+                setFilter={setFilter}
             />
         </>
     )

@@ -11,7 +11,9 @@ const Home = ({ results,
                   searchText,
                   setSearchText,
                   pageIndex,
-                  setPageIndex }) => {
+                  setPageIndex,
+                  fromDate, setFromDate, toDate, setToDate, filter, setFilter,
+}) => {
     return (
         <>
             <Box
@@ -32,7 +34,14 @@ const Home = ({ results,
                         <ResultList
                             pageIndex={pageIndex}
                             setPageIndex={setPageIndex}
-                            results={results}/>
+                            results={results}
+                            fromDate={fromDate}
+                            setFromDate={setFromDate}
+                            toDate={toDate}
+                            setToDate={setToDate}
+                            filter={filter}
+                            setFilter={setFilter}
+                        />
                     </Box>
                 </Container>
             </Box>

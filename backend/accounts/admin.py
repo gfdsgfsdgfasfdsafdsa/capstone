@@ -79,7 +79,7 @@ admin.site.unregister(Group)
 admin.site.register(User, UserAdmin)
 
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'gender', 'school', 'age', 'strand')
+    list_display = ('id', 'user', 'gender', 'school', 'age', 'strand')
     search_fields = ('user',)
 
 admin.site.register(Student, StudentAdmin)

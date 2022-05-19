@@ -238,7 +238,7 @@ const ExamDetails = () => {
                         <Typography variant="caption" mb={2}>
                             If you switched camera disable and enable again.
                         </Typography>
-                        <div style={{ marginTop: '20px' }}>Please ignore this camera currently on test</div>
+                        <div/>
                         <video id="video-preview"
                                style={{
                                    border: '5px solid #5048E5',

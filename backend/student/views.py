@@ -1,6 +1,9 @@
+import pytz
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+
+from backend.Google import spreadsheet_get_data, spreadsheet_append, spreadsheet_delete_row, spreadsheet_top_insert
 from .serializers import School, SchoolSerializer, Exam, Subject, Question, Choice, Result, \
     ResultsSerializer, SchoolListSerializer, StudentApplied, NotificationSerializer
 from rest_framework.views import APIView
@@ -13,7 +16,6 @@ from rest_framework.permissions import IsAuthenticated
 import pandas as pd
 import numpy as np
 from django.db.models import Q, Prefetch, Count
-
 
 class SchoolList(generics.ListAPIView, generics.UpdateAPIView):
     serializer_class = SchoolListSerializer
@@ -134,7 +136,8 @@ class SubmitResultDetails(APIView):
 class SubmitExamApi(APIView):
     def post(self, request, format=None, **kwargs):
         school = School.objects.select_related('school_exam').get(id=kwargs['pk'])
-        result = Result.objects.get(school=school, student__user_id=request.user.id)
+        student = Student.objects.get(user=request.user)
+        result = Result.objects.get(school=school, student=student)
 
         if ResultDetails.objects.filter(result=result).count() or result.submitted:
             return Response(status=status.HTTP_200_OK)
@@ -177,12 +180,11 @@ class SubmitExamApi(APIView):
         result.save()
 
 
-        exam_info = {
-            'Student': [request.user.name],
-            'Course': '',
-            'Strand': [request.user.student_user.strand],
-        }
         overall_score = 0
+        # Subject/35 Subject/35
+        subject_header_list = []
+        student_scores = []
+        items_append_spreadsheet = []
 
         # Regression
         ex = Exam.objects.get(school=school)
@@ -193,7 +195,7 @@ class SubmitExamApi(APIView):
         formula = "y = &beta;0"
         beta_count = 1
         try:
-            x_drops = ['Course', 'Strand', 'Student', 'Overall', 'Student']
+            x_drops = ['Course', 'Strand', 'Student', 'Overall']
 
             x = data.drop(x_drops, axis='columns')
             x = np.array(x)
@@ -201,8 +203,6 @@ class SubmitExamApi(APIView):
             ones = np.ones((col_length, 1))
             x = np.hstack((ones, x))
             y = np.array(data['Overall'])
-
-            student_scores = []
 
             result_d = ResultDetails.objects.filter(result=result)
             skip_col = 3
@@ -213,14 +213,15 @@ class SubmitExamApi(APIView):
                         subject_s_total = col.split('/')
                         if r.subject == subject_s_total[0]:
                             student_scores.append(r.score)
-                            exam_info[r.subject] = r.score
                             overall_score += r.score
                             formula += " + &beta;"+ str(beta_count) +"("+ r.subject +")"
                             beta_count += 1
-                            r.overall = int(subject_s_total[1])
+                            over_score = int(subject_s_total[1])
+                            r.overall = over_score
+                            # for spreadsheet
+                            subject_header_list.append(r.subject+'/'+str(over_score))
                             r.save()
                 j += 1
-            exam_info['Overall'] = overall_score
 
             predicted = 0
             '''
@@ -293,6 +294,10 @@ class SubmitExamApi(APIView):
                     course=course,
                     rank=rank,
                 )
+                # for spreadsheet
+                if rank == 1:
+                    items_append_spreadsheet.append([student.id, course, student.strand]
+                                                    + student_scores + [overall_score])
                 recommendation_count += 1
                 last_recommended_value = last_overall
             result.regression_model = regression_model
@@ -300,6 +305,9 @@ class SubmitExamApi(APIView):
             result.save()
         except (Exception,):
             pass
+
+
+        spreadsheet_append(ex.spreadsheet_id, items_append_spreadsheet)
 
         '''
         if exam_info['Course'] != '':
@@ -435,7 +443,19 @@ class ResultsApi(generics.ListAPIView,):
 
     def get_queryset(self):
         user_id = self.request.user
-        return Result.objects.filter(student__user_id=user_id, submitted=True)
+        date_from = self.request.query_params.get('from')
+        date_to = self.request.query_params.get('to')
+        if date_from is not None and date_to is not None:
+            date_from = datetime.strptime(date_from+" 00:00:00", "%Y-%m-%d %H:%M:%S")
+            date_to = datetime.strptime(date_to+" 23:59:59", "%Y-%m-%d %H:%M:%S")
+            asia_timezone = pytz.timezone('Asia/Shanghai')
+            date_from = asia_timezone.localize(date_from)
+            date_to = asia_timezone.localize(date_to)
+
+            return Result.objects.filter(student__user=user_id,
+                                         submitted=True,
+                                         date_taken__range=[date_from, date_to])
+        return Result.objects.filter(student__user=user_id, submitted=True)
 
 
 #Notification
