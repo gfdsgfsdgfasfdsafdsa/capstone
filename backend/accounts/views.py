@@ -99,6 +99,7 @@ class StudentRegistration(APIView):
         if email_exist:
             return Response({ 'email_exist': '1' }, status=status.HTTP_200_OK)
 
+        '''
         activation_token = secrets.token_urlsafe()
         while True:
             if User.objects.filter(activated=activation_token).count() == 0:
@@ -114,13 +115,14 @@ class StudentRegistration(APIView):
             [data['email']],
             fail_silently=False,
         )
+        '''
 
         user = User.objects.create(
             email=data['email'],
             name=data['name'],
             type=2,
-            #activated=1,
-            activated=activation_token,
+            activated=1,
+            #activated=activation_token,
         )
         user.set_password(request.data['password'])
         user.save()

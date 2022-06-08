@@ -9,7 +9,7 @@ import {
     Typography,
     Paper,
     Link as MuiLink,
-    Pagination, TextField, Button, IconButton,
+    Pagination, TextField, Button, IconButton, CircularProgress,
 } from '@mui/material';
 import Link from 'next/link'
 import { DateTime } from 'luxon'
@@ -21,7 +21,7 @@ import {
 
 
 export default function ResultList({ pageIndex, setPageIndex, students,
-    fromDate, setFromDate, toDate, setToDate, filter, setFilter, onClickExportCSV
+    fromDate, setFromDate, toDate, setToDate, filter, setFilter, onClickExportCSV, onClickExportResult, exportResultLoading
                                    }){
 
     useEffect(() => {
@@ -56,6 +56,26 @@ export default function ResultList({ pageIndex, setPageIndex, students,
                     alignItems: 'center',
                 }}
             >
+                <Button
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    sx={{ pb: 1, mt: 1 }}
+                    endIcon={<FileDownloadIcon/>}
+                    disabled={students?.count === 0 || exportResultLoading}
+                    onClick={onClickExportResult}
+                >
+                    {exportResultLoading ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center'}}>
+                            <CircularProgress sx={{ mr: 1 }} color="primary" size={20}/>
+                            Exporting Result..
+                        </Box>
+                    ): (
+                        <div>
+                            Export Result
+                        </div>
+                    )}
+                </Button>
                 <Button
                     size="small"
                     variant="contained"

@@ -21,7 +21,7 @@ from backend.Google import create_spreadsheet, spreadsheet_top_insert, spreadshe
     spreadsheet_delete_row
 from .serializers import ExamSerializer, Exam, Subject, Question, QuestionSerializer, School, SchoolSerializer, Result, \
     ResultSerializer, ResultSingleSerializer, StudentSerializer, StudentApplied, Student, AppliedStudentSerializer, \
-    NotificationSerializer, Choice, CourseRecommended
+    NotificationSerializer, Choice, CourseRecommended, ResultDetails
 from rest_framework.permissions import IsAuthenticated
 import pandas as pd
 
@@ -639,3 +639,65 @@ class ExportCSV(APIView):
         data['spreadsheetId'] = exam.spreadsheet_id
 
         return Response(data, status=status.HTTP_200_OK)
+
+class ExportResult(APIView):
+    def put(self, request, format=None):
+        data = request.data
+        # if filtered
+        '''
+        Parent.objects.annotate(
+            nabc=Count('children', filter=~Q(children__foo='ABC'))
+        ).filter(
+            nabc=0
+        )
+        '''
+        results = None
+        if data is not None:
+            results = Result.objects.filter(school__user=request.user,
+                                            submitted=True,
+                                            date_taken__range=[data['from'] + ' 00:00', data['to'] + ' 23:59'])
+        else:
+            results = Result.objects.filter(school__user=request.user, submitted=True)
+
+        result_list = []
+        for r in results:
+            obj = {
+                'STUDENT ID': '',
+                'NAME': '',
+                'DATE': '',
+                'SCHOOL': '',
+                'STRAND': '',
+                #'ENGLISH': '',
+                #'MATH': '',
+                #'SCIENCE': '',
+                #'OVERALL': '',
+                #'COURSE RECOMMENDED': '',
+            }
+            course_recommended_list = ''
+            overall = 0
+            obj['STUDENT ID'] = r.student.id
+            obj['NAME'] = r.student.user.name
+            obj['DATE'] = str(r.date_taken).split(' ')[0]
+            obj['SCHOOL'] = r.student.school
+            obj['STRAND'] = r.student.strand
+            result_details = ResultDetails.objects.filter(result=r)
+            courses_r = CourseRecommended.objects.filter(result=r, rank=1)
+            for rd in result_details:
+                obj[rd.subject.upper()+'/'+str(rd.overall)] = rd.score
+                overall += rd.score
+            for c in courses_r:
+                course_recommended_list += c.course + ', '
+
+            obj['OVERALL'] = overall
+            if course_recommended_list != '':
+                obj['COURSE RECOMMENDED'] = course_recommended_list[:-2]
+            else:
+                obj['COURSE RECOMMENDED'] = ''
+
+            result_list.append(obj)
+
+        df = pd.DataFrame(result_list)
+        file_path = os.path.join(settings.BASE_DIR, 'files/results-'+str(request.user.id)+'.csv')
+        df.to_csv(file_path, index=False, header=True)
+
+        return Response({ 'file_name': 'results-'+str(request.user.id)+'.csv' }, status=status.HTTP_200_OK)

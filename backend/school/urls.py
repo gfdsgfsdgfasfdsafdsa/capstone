@@ -3,7 +3,7 @@ from django.urls import path, include
 
 from .views import ExamViewSet, QuestionUpdateDestroy, QuestionListCreate, SchoolExamRetrieve, CsvData, \
     StudentExamResults, StudentExamResult, StudentAppliedList, NotificationDetails, Notification,\
-    DashboardDetails, ImportQuestion, ExportCSV
+    DashboardDetails, ImportQuestion, ExportCSV, ExportResult
 
 router = DefaultRouter()
 router.register("exam", ExamViewSet)
@@ -22,6 +22,7 @@ urlpatterns = [
     path('dashboard/', DashboardDetails.as_view()),
     path("import/question/subject/<int:pk>/", ImportQuestion.as_view()),
     path("export/csv/", ExportCSV.as_view()),
+    path("export/result/", ExportResult.as_view()),
 ]
 
 

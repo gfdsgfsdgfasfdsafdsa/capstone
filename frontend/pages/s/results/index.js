@@ -16,6 +16,7 @@ const Results = ({ resultList }) => {
     const [filter, setFilter] = useState(false);
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
+    const [exportResultLoading, setExportResultLoading] = useState(false)
 
     const { data: results, mutate } = useSWR(`school/exam/student/results/?page=${pageIndex}&search=${searchText}${filter ? `&from=${fromDate}&to=${toDate}`: ''}`, {
         fallbackData: resultList,
@@ -34,6 +35,31 @@ const Results = ({ resultList }) => {
             document.body.removeChild(a)
         }).catch((_e) => {
             alert('Something went wrong.')
+        })
+    }
+
+    const onClickExportResult = async () => {
+        setExportResultLoading(true)
+        let data = null
+        if(filter){
+            data = {
+                'from': fromDate,
+                'to': toDate,
+            }
+        }
+        await AxiosInstance.put(`school/export/result/`, data).then(({data}) => {
+            let link = `${process.env.api}/media/files/${data?.file_name}`
+            const a = document.createElement('a')
+            a.target = "_blank"
+            a.href = link
+            a.download = link.split('/').pop()
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            setExportResultLoading(false)
+        }).catch((_e) => {
+            alert('Something went wrong.')
+            setExportResultLoading(false)
         })
     }
 
@@ -89,6 +115,8 @@ const Results = ({ resultList }) => {
                             filter={filter}
                             setFilter={setFilter}
                             onClickExportCSV={onClickExportCSV}
+                            onClickExportResult={onClickExportResult}
+                            exportResultLoading={exportResultLoading}
                         />
                     </Box>
                 </Container>

@@ -234,13 +234,17 @@ class ResultSerializer(serializers.ModelSerializer):
 
 class StudentDetailSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
-        fields = ['gender', 'school', 'age', 'strand', 'name', 'id']
+        fields = ['gender', 'school', 'age', 'strand', 'name', 'id', 'email']
 
     def get_name(self, obj):
         return obj.user.name
+
+    def get_email(self, obj):
+        return obj.user.email
 
 class ResultDetailSerializer(serializers.ModelSerializer):
     class Meta:

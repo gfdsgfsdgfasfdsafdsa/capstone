@@ -125,10 +125,10 @@ export default function Result({ result, id }){
 		pdf.setFont(undefined, 'bold').text(`AGE: `, startX, spaceInfo+15);
 		pdf.setFont(undefined, 'normal').text(`${result?.student?.age.toString()}`, startX+11, spaceInfo+15);
 
-		pdf.setFont(undefined, 'bold').text(`School from: `, startX, spaceInfo+22);
-		pdf.setFont(undefined, 'normal').text(`${result?.student?.school.toUpperCase()}`, startX+26, spaceInfo+22);
+		pdf.setFont(undefined, 'bold').text(`SCHOOL FROM: `, startX, spaceInfo+22);
+		pdf.setFont(undefined, 'normal').text(`${result?.student?.school.toUpperCase()}`, startX+32, spaceInfo+22);
 
-		pdf.setFont(undefined, 'bold').text(`Gender: `, startX, spaceInfo+29);
+		pdf.setFont(undefined, 'bold').text(`GENDER: `, startX, spaceInfo+29);
 		pdf.setFont(undefined, 'normal').text(`${result?.student?.gender.toUpperCase()}`, startX+17, spaceInfo+29);
 
 		let spaceExam = spaceInfo+45;
@@ -324,7 +324,7 @@ export default function Result({ result, id }){
                             flexWrap: 'wrap',
                             alignItems: 'center'
                         }}
-                        mt={1} mb={1}
+                        mt={1}
                     >
                         <Typography variant="h4">
                             {result?.student.name}
@@ -357,6 +357,11 @@ export default function Result({ result, id }){
                             </Button>
                         </Box>
                     </Box>
+                    <Typography variant="body2">
+                        Email: &nbsp;
+                        {result?.student.email}
+                    </Typography>
+
                     <Typography variant="body2" mb={3}>
                         Date taken: &nbsp;
                         {DateTime.fromISO(result?.date_taken).toFormat('LLL dd, yyyy')}
